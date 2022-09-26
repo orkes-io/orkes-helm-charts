@@ -1,0 +1,18 @@
+replicaCount: 1
+
+service:
+  port: 5000
+
+image:
+  repository: orkesio/orkes-conductor-standalone
+  tag: latest
+  pullPolicy: Always
+  livenessPort: 5000
+
+resources: {}
+
+imageCredentials:
+  registry: https://index.docker.io/v1/
+  username: orkesdocker
+  password: <YOUR SECRET>
+  email: dockeracess@orkes.io
