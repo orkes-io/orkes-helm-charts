@@ -1,0 +1,8 @@
+apiVersion: v2
+name: orkes-conductor
+description: Helm Chart for Deploying Orkes Conductor
+
+type: application
+
+version: 0.1.0
+appVersion: "2.1.49"
