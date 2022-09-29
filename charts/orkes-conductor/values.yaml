@@ -4,7 +4,7 @@ service:
   port: 5000
 
 image:
-  repository: orkesio/orkes-conductor-standalone
+  repository: orkesio/orkes-conductor-server
   tag: latest
   pullPolicy: Always
   livenessPort: 5000
