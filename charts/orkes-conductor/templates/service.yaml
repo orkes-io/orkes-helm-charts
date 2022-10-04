@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "orkes-conductor.fullname" . }}
+  labels:
+    {{- include "orkes-conductor.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      protocol: TCP
+      targetPort: 5000
+      name: default-port
+  selector:
+    {{- include "orkes-conductor.selectorLabels" . | nindent 4 }}

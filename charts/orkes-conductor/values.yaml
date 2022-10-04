@@ -1,0 +1,84 @@
+replicaCount: 1
+
+service:
+  port: 5000
+
+image:
+  repository: orkesio/orkes-conductor-server
+  tag: latest
+  pullPolicy: Always
+  livenessPort: 5000
+
+app:
+  s3Region: "us-east-1"
+  springProfilesActive: "logrotate,postgres"
+  sweepBatchSize: "20"
+  schedulerPollingInterval: "50"
+  lockTimeToTry: "75"
+  documentStoreUploaderThreadCount: "15"
+  dbIndexerThreadCount: "15"
+  dbIndexerPollingInterval: "1"
+  swaggerUrl: "http://localhost:8080/"
+  sweeperThreadCount: "20"
+  schedulerPollBatchSize: "10"
+  dbIndexerPollBatchSize: "30"
+  sweepFrequencyMillis: "1"
+  jvmSettings: "-Xms2048M -Xmx7000M"
+  systemTaskMaxPollCount: "25"
+  secretsType: "memory"
+  workflowExecutionLockEnabled: "true"
+  apiRateLimiterEnabled: "true"
+  documentStoreS3BucketName: "s3-bucket-name"
+  resources:
+    cpuLimit: "6"
+    memoryLimit: "8Gi"
+    cpuRequests: "4"
+    memoryRequests: "4Gi"
+
+
+workers:
+  accessKeyId: ""
+  accessKeySecret: ""
+  springProfilesActive: "logrotate"
+  blockIps: "127.0.0.1"
+  replicaCount: 4
+  resources:
+    cpuLimit: "2"
+    memoryLimit: "2Gi"
+    cpuRequests: "1"
+    memoryRequests: "1Gi"
+
+redis:
+  host: cache.amazonaws.com
+  port: "6379"
+
+postgres:
+  username: "username"
+  password: "password"
+  url: "jdbc:postgresql://rds.amazonaws.com:5432/dbname"
+
+workerImage:
+  repository: orkesio/orkes-conductor-workers
+  tag: latest
+  pullPolicy: Always
+
+appResources: {}
+
+imageCredentials:
+  registry: https://index.docker.io/v1/
+  username: orkesdocker
+  password: <YOUR SECRET>
+  email: dockeracess@orkes.io
+
+security:
+  defaultUserEmail: "user@example.com"
+  defaultUserName: "Name"
+  enabled: "false"
+  jwt:
+    secret: ""
+  auth0:
+    clientSecret: ""
+    clientId: ""
+    useIdToken: "false"
+    domain: ""
+  ssmPath: ""

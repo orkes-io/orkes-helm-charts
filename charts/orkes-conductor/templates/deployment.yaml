@@ -1,0 +1,197 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "orkes-conductor.fullname" . }}
+  labels:
+    {{- include "orkes-conductor.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "orkes-conductor.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "8080"
+        prometheus.io/scrape: "true"
+      labels:
+        {{- include "orkes-conductor.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: conductor.redis-lock.serverAddress
+          value: redis://{{ .Values.redis.host }}:{{ .Values.redis.port }}
+        - name: conductor.security.auth0.clientSecret
+          value: {{ .Values.security.auth0.clientSecret }}
+        - name: DEFAULT_USER_EMAIL
+          value: {{ .Values.security.defaultUserEmail }}
+        - name: SPRING_PROFILES_ACTIVE
+          value: {{ .Values.app.springProfilesActive | quote }}
+        - name: conductor.archive.db.document.store.s3.region
+          value: {{ .Values.app.s3Region }}
+        - name: conductor.app.sweeper.sweepBatchSize
+          value: {{ .Values.app.sweepBatchSize | quote }}
+        - name: conductor.security.default.workers.accessKeyId
+          value: {{ .Values.workers.accessKeyId | quote }}
+        - name: conductor.security.default.workers.accessKeySecret
+          value: {{ .Values.workers.accessKeySecret | quote }}
+        - name: conductor.scheduler.pollingInterval
+          value: {{ .Values.app.schedulerPollingInterval | quote }}
+        - name: conductor.security.auth0.clientId
+          value: {{ .Values.security.auth0.clientId | quote }}
+        - name: conductor.security.jwt.secret
+          value: {{ .Values.security.jwtSecret | quote }}
+        - name: conductor.app.lockTimeToTry
+          value: {{ .Values.app.lockTimeToTry | quote }}
+        - name: conductor.secrets.ssm.path
+          value: {{ .Values.security.ssmPath | quote }}
+        - name: conductor.archive.db.document.store.uploader.threadCount
+          value: {{ .Values.app.documentStoreUploaderThreadCount | quote }}
+        - name: conductor.security.auth0.useIdToken
+          value: {{ .Values.security.auth0.useIdToken | quote }}
+        - name: conductor.archive.db.indexer.threadCount
+          value: {{ .Values.app.dbIndexerThreadCount | quote }}
+        - name: conductor.archive.db.indexer.pollingInterval
+          value: {{ .Values.app.dbIndexerPollingInterval | quote }}
+        - name: conductor.security.auth0.domain
+          value: {{ .Values.security.auth0.domain | quote }}
+        - name: spring.datasource.password
+          value: {{ .Values.postgres.password | quote }}
+        - name: conductor.swagger.url
+          value: {{ .Values.app.swaggerUrl | quote }}
+        - name: conductor.app.sweeperThreadCount
+          value: {{ .Values.app.sweeperThreadCount | quote }}
+        - name: conductor.security.enabled
+          value: {{ .Values.security.enabled | quote }}
+        - name: conductor.scheduler.pollBatchSize
+          value: {{ .Values.app.schedulerPollBatchSize | quote }}
+        - name: spring.datasource.username
+          value: {{ .Values.postgres.username | quote }}
+        - name: conductor.archive.db.indexer.pollBatchSize
+          value: {{ .Values.app.dbIndexerPollBatchSize | quote }}
+        - name: aws.region
+          value: {{ .Values.app.s3Region | quote }}
+        - name: spring.datasource.url
+          value: {{ .Values.postgres.url | quote }}
+        - name: conductor.sweep-frequency.millis
+          value: {{ .Values.app.sweepFrequencyMillis | quote }}
+        - name: JVM_MEMORY_SETTINGS
+          value: {{ .Values.app.jvmSettings | quote }}
+        - name: DEPLOY_ENV
+          value: prod
+        - name: conductor.app.systemTaskMaxPollCount
+          value: {{ .Values.app.systemTaskMaxPollCount | quote }}
+        - name: conductor.secrets.type
+          value: {{ .Values.app.secretsType | quote }}
+        - name: conductor.app.workflow-execution-lock-enabled
+          value: {{ .Values.app.workflowExecutionLockEnabled | quote }}
+        - name: DEFAULT_USER_NAME
+          value: {{ .Values.security.defaultUserName | quote }}
+        - name: conductor.redis.hosts
+          value: {{ .Values.redis.host }}:{{ .Values.redis.port }}:us-east-1c
+        - name: conductor.api.ratelimiter.enabled
+          value: {{ .Values.app.apiRateLimiterEnabled | quote }}
+        - name: conductor.archive.db.document.store.s3.s3BucketName
+          value: {{ .Values.app.documentStoreS3BucketName | quote }}
+        - name: LOCAL_HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+          - name: liveness-port
+            containerPort: {{ .Values.image.livenessPort }}
+            protocol: TCP
+        resources:
+          limits:
+            cpu: {{ .Values.app.resources.cpuLimit | quote }}
+            memory: {{ .Values.app.resources.memoryLimit | quote }}
+          requests:
+            cpu: {{ .Values.app.resources.cpuRequests | quote }}
+            memory: {{ .Values.app.resources.memoryRequests | quote }}
+        startupProbe:
+          httpGet:
+            path: /health
+            port: liveness-port
+          failureThreshold: 30
+          periodSeconds: 10
+        appResources:
+          {{- toYaml .Values.resources | nindent 12 }}
+      imagePullSecrets:
+        - name: orkesregistry
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: conductor-app
+      serviceAccountName: conductor-app
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "orkes-conductor-workers.fullname" . }}-workers
+spec:
+  progressDeadlineSeconds: 600
+  replicas: {{ .Values.workers.replicaCount }}
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: {{ include "orkes-conductor-workers.fullname" . }}-workers
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "8085"
+        prometheus.io/scrape: "true"
+      labels:
+        app: {{ include "orkes-conductor-workers.fullname" . }}-workers
+    spec:
+      containers:
+      - env:
+        - name: conductor.worker.http.block.hosts
+          value: localhost
+        - name: SPRING_PROFILES_ACTIVE
+          value: {{ .Values.workers.springProfilesActive | quote }}
+        - name: DEPLOY_ENV
+          value: prod
+        - name: conductor.server.url
+          value: http://{{ include "orkes-conductor.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8080/api/
+        - name: conductor.security.default.workers.accessKeyId
+          value: {{ .Values.workers.accessKeyId | quote }}
+        - name: conductor.security.default.workers.accessKeySecret
+          value: {{ .Values.workers.accessKeySecret | quote }}
+        - name: conductor.worker.http.block.ips
+          value: {{ .Values.workers.blockIps | quote }}
+        - name: LOCAL_HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        image: "{{ .Values.workerImage.repository }}:{{ .Values.workerImage.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: {{ include "orkes-conductor-workers.fullname" . }}-workers
+        resources:
+          limits:
+            cpu: {{ .Values.workers.resources.cpuLimit | quote }}
+            memory: {{ .Values.workers.resources.memoryLimit | quote }}
+          requests:
+            cpu: {{ .Values.workers.resources.cpuRequests | quote }}
+            memory: {{ .Values.workers.resources.memoryRequests | quote }}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: orkesregistry
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: conductor-workers-app
+      serviceAccountName: conductor-workers-app
+      terminationGracePeriodSeconds: 30
