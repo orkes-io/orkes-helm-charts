@@ -7,6 +7,7 @@ Once Helm has been set up correctly, add the repo as follows:
     
     helm repo add orkes-helm-charts https://orkes-io.github.io/orkes-helm-charts
 
+
 If you had already added this repo earlier, run `helm repo update` to retrieve
 the latest versions of the packages.  You can then run `helm search repo orkes-helm-charts` to see the charts.
 
@@ -21,7 +22,7 @@ To uninstall the chart:
     helm delete <name> -n <namespace>
 
 To access the service after installation:
-    
+
     kubectl --namespace <namespace> port-forward svc/<name>-orkes-conductor-standalone <LOCAL PORT>:5000
 
     Now you can access this on http://localhost:<LOCAL PORT>
