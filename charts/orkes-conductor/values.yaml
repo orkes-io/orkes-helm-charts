@@ -1,4 +1,4 @@
-replicaCount: 1
+replicaCount: 7
 
 service:
   port: 5000
@@ -41,7 +41,8 @@ workers:
   accessKeySecret: ""
   springProfilesActive: "logrotate"
   blockIps: "127.0.0.1"
-  replicaCount: 4
+  replicaCount: 7
+  jvmSettings: "-Xms750M -Xmx2000M"
   resources:
     cpuLimit: "2"
     memoryLimit: "2Gi"

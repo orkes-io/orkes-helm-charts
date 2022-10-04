@@ -170,6 +170,8 @@ spec:
           value: {{ .Values.workers.accessKeySecret | quote }}
         - name: conductor.worker.http.block.ips
           value: {{ .Values.workers.blockIps | quote }}
+        - name: JVM_MEMORY_SETTINGS
+          value: { { .Values.workers.jvmSettings | quote } }
         - name: LOCAL_HOST_IP
           valueFrom:
             fieldRef:
