@@ -11,6 +11,10 @@ spec:
       {{- include "orkes-conductor.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      annotations:
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "8080"
+        prometheus.io/scrape: "true"
       labels:
         {{- include "orkes-conductor.selectorLabels" . | nindent 8 }}
     spec:
@@ -90,6 +94,10 @@ spec:
           value: {{ .Values.app.apiRateLimiterEnabled | quote }}
         - name: conductor.archive.db.document.store.s3.s3BucketName
           value: {{ .Values.app.documentStoreS3BucketName | quote }}
+        - name: LOCAL_HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -141,7 +149,7 @@ spec:
     metadata:
       annotations:
         prometheus.io/path: /actuator/prometheus
-        prometheus.io/port: "8080"
+        prometheus.io/port: "8085"
         prometheus.io/scrape: "true"
       labels:
         app: {{ include "orkes-conductor-workers.fullname" . }}-workers
@@ -162,6 +170,10 @@ spec:
           value: {{ .Values.workers.accessKeySecret | quote }}
         - name: conductor.worker.http.block.ips
           value: {{ .Values.workers.blockIps | quote }}
+        - name: LOCAL_HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         image: "{{ .Values.workerImage.repository }}:{{ .Values.workerImage.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: {{ include "orkes-conductor-workers.fullname" . }}-workers
