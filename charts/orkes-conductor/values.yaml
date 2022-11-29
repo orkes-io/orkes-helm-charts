@@ -1,4 +1,4 @@
-replicaCount: 7
+replicaCount: 3
 
 service:
   port: 5000
@@ -9,39 +9,46 @@ image:
   pullPolicy: Always
   livenessPort: 5000
 
+workerImage:
+  repository: orkesio/orkes-conductor-workers
+  tag: latest
+  pullPolicy: Always
+
 app:
+  env: azure
   s3Region: "us-east-1"
-  springProfilesActive: "logrotate,postgres"
+  springProfilesActive: "security,logrotate,postgres"
   sweepBatchSize: "20"
   schedulerPollingInterval: "50"
   lockTimeToTry: "75"
   documentStoreUploaderThreadCount: "15"
-  dbIndexerThreadCount: "15"
+  dbIndexerThreadCount: "5"
   dbIndexerPollingInterval: "1"
-  swaggerUrl: "http://localhost:8080/"
+  swaggerUrl: "/"
   sweeperThreadCount: "20"
   schedulerPollBatchSize: "10"
   dbIndexerPollBatchSize: "30"
   sweepFrequencyMillis: "1"
-  jvmSettings: "-Xms2048M -Xmx7000M"
-  systemTaskMaxPollCount: "25"
+  jvmSettings: "-Xms1500M -Xmx3000M"
+  systemTaskMaxPollCount: "20"
   secretsType: "memory"
   workflowExecutionLockEnabled: "true"
   apiRateLimiterEnabled: "true"
   documentStoreS3BucketName: "s3-bucket-name"
+  archiveStoreType: "postgres"
   resources:
-    cpuLimit: "6"
-    memoryLimit: "8Gi"
-    cpuRequests: "4"
-    memoryRequests: "4Gi"
+    cpuLimit: "3"
+    memoryLimit: "3Gi"
+    cpuRequests: "2"
+    memoryRequests: "2Gi"
 
 
 workers:
-  accessKeyId: ""
-  accessKeySecret: ""
+  accessKeyId: "<YOUR SECRET KEY (RANDOM VALUE)>"
+  accessKeySecret: "<YOUR SECRET (RANDOM VALUE)>"
   springProfilesActive: "logrotate"
   blockIps: "127.0.0.1"
-  replicaCount: 7
+  replicaCount: 2
   jvmSettings: "-Xms750M -Xmx2000M"
   resources:
     cpuLimit: "2"
@@ -52,16 +59,12 @@ workers:
 redis:
   host: cache.amazonaws.com
   port: "6379"
+  password: ""
 
 postgres:
   username: "username"
   password: "password"
   url: "jdbc:postgresql://rds.amazonaws.com:5432/dbname"
-
-workerImage:
-  repository: orkesio/orkes-conductor-workers
-  tag: latest
-  pullPolicy: Always
 
 appResources: {}
 
@@ -76,7 +79,8 @@ security:
   defaultUserName: "Name"
   enabled: "false"
   jwt:
-    secret: ""
+    secret: "<YOUR SECRET KEY (For example use this: openssl rand -base64 172 | tr -d '\n')>"
+# Create an account in Auth0, Create a SPA - get the id and secret and domain for the following info
   auth0:
     clientSecret: ""
     clientId: ""
