@@ -5,13 +5,13 @@ service:
 
 image:
   repository: orkesio/orkes-conductor-server
-  tag: latest
+  tag: 2.2.4
   pullPolicy: Always
   livenessPort: 5000
 
 workerImage:
   repository: orkesio/orkes-conductor-workers
-  tag: latest
+  tag: 2.2.4
   pullPolicy: Always
 
 app:
