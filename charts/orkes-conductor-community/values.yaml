@@ -18,14 +18,14 @@ app:
     memoryRequests: "2Gi"
 
 redis:
-  host: 10.51.5.219
+  host: host
   port: "6379"
   password: ""
 
 postgres:
-  username: "postgres"
-  password: "sdf34sfdsfsfdsss"
-  url: "jdbc:postgresql://10.6.16.3:5432/postgres"
+  username: "username"
+  password: "password"
+  url: "jdbc:postgresql:/host:5432/postgres"
 
 imageCredentials:
   registry: https://index.docker.io/v1/
