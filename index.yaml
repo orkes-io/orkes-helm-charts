@@ -71,6 +71,17 @@ entries:
     urls:
     - https://github.com/orkes-io/orkes-helm-charts/releases/download/orkes-conductor-0.1.0/orkes-conductor-0.1.0.tgz
     version: 0.1.0
+  orkes-conductor-community:
+  - apiVersion: v2
+    appVersion: 1.0.3
+    created: "2022-12-01T23:08:19.260812934Z"
+    description: Orkes Conductor Community Deployment Helm Charts
+    digest: a9dfe482216b14124cc580e7d2559c6a04b5dc8f57a532101196d0c6bf535174
+    name: orkes-conductor-community
+    type: application
+    urls:
+    - https://github.com/orkes-io/orkes-helm-charts/releases/download/orkes-conductor-community-1.0.0/orkes-conductor-community-1.0.0.tgz
+    version: 1.0.0
   orkes-conductor-standalone:
   - apiVersion: v2
     appVersion: 2.2.8
@@ -132,4 +143,4 @@ entries:
     urls:
     - https://github.com/orkes-io/orkes-helm-charts/releases/download/orkes-conductor-standalone-0.1.0/orkes-conductor-standalone-0.1.0.tgz
     version: 0.1.0
-generated: "2022-12-01T07:42:58.736269725Z"
+generated: "2022-12-01T23:08:19.260839434Z"
