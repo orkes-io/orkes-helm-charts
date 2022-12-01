@@ -3,3 +3,4 @@
 /.idea/orkes-helm-charts.iml
 /.idea/vcs.xml
 /.idea/.gitignore
+charts/orkes-conductor-community/gcp.yaml
