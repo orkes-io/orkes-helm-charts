@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   orkes-conductor:
   - apiVersion: v2
+    appVersion: 2.1.89
+    created: "2022-12-05T04:38:25.396480031Z"
+    description: Helm Chart for Deploying Orkes Conductor
+    digest: 83c5949e6abe57da0ee89a7aa0bfdf398a223971143dabb3959c5378df5fc9af
+    name: orkes-conductor
+    type: application
+    urls:
+    - https://github.com/orkes-io/orkes-helm-charts/releases/download/orkes-conductor-2.2.91/orkes-conductor-2.2.91.tgz
+    version: 2.2.91
+  - apiVersion: v2
     appVersion: 2.2.9
     created: "2022-12-01T23:09:18.995193554Z"
     description: Helm Chart for Deploying Orkes Conductor
@@ -94,6 +104,16 @@ entries:
     version: 1.0.0
   orkes-conductor-standalone:
   - apiVersion: v2
+    appVersion: 2.1.89
+    created: "2022-12-05T04:38:25.523525194Z"
+    description: A Helm chart for Kubernetes
+    digest: 07342ea7cd1981341036c0bf22185458eecfe7e4d904250e8bce68ffa2654676
+    name: orkes-conductor-standalone
+    type: application
+    urls:
+    - https://github.com/orkes-io/orkes-helm-charts/releases/download/orkes-conductor-standalone-2.2.91/orkes-conductor-standalone-2.2.91.tgz
+    version: 2.2.91
+  - apiVersion: v2
     appVersion: 2.2.9
     created: "2022-12-01T23:09:19.142432543Z"
     description: A Helm chart for Kubernetes
@@ -163,4 +183,4 @@ entries:
     urls:
     - https://github.com/orkes-io/orkes-helm-charts/releases/download/orkes-conductor-standalone-0.1.0/orkes-conductor-standalone-0.1.0.tgz
     version: 0.1.0
-generated: "2022-12-01T23:09:19.142483044Z"
+generated: "2022-12-05T04:38:25.523579095Z"
