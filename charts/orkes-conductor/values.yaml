@@ -2,16 +2,17 @@ replicaCount: 3
 
 service:
   port: 5000
+  appPort: 8080
 
 image:
   repository: orkesio/orkes-conductor-server
-  tag: 2.2.9
+  tag: 2.1.89
   pullPolicy: Always
   livenessPort: 5000
 
 workerImage:
   repository: orkesio/orkes-conductor-workers
-  tag: 2.2.9
+  tag: 2.1.89
   pullPolicy: Always
 
 app:
@@ -34,7 +35,13 @@ app:
   secretsType: "memory"
   workflowExecutionLockEnabled: "true"
   apiRateLimiterEnabled: "true"
+  # Required if archiveStoreType = s3
   documentStoreS3BucketName: "s3-bucket-name"
+  # Required if archiveStoreType = azureblob
+  documentStoreAzureBlobContainerName: "azure-blob-container"
+  # Required if archiveStoreType = azureblob
+  documentStoreAzureBlobEndpoint: "azure-blob-endpoint"
+  # postgres, s3, azureblob, gcp
   archiveStoreType: "postgres"
   resources:
     cpuLimit: "3"

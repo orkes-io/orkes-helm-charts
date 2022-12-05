@@ -98,6 +98,10 @@ spec:
               value: {{ .Values.app.apiRateLimiterEnabled | quote }}
             - name: conductor.archive.db.document.store.s3.s3BucketName
               value: {{ .Values.app.documentStoreS3BucketName | quote }}
+            - name: conductor.archive.db.document.store.type.azureblob.containerName
+              value: {{ .Values.app.documentStoreAzureBlobContainerName | quote }}
+            - name: conductor.archive.db.document.store.type.azureblob.endpoint
+              value: {{ .Values.app.documentStoreAzureBlobEndpoint | quote }}
             - name: conductor.archive.db.document.store.type
               value: {{ .Values.app.archiveStoreType | quote }}
             - name: LOCAL_HOST_IP
