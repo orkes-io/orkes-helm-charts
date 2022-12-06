@@ -4,5 +4,5 @@ description: Helm Chart for Deploying Orkes Conductor
 
 type: application
 
-version: 2.2.91
-appVersion: "2.1.89"
+version: 2.2.92
+appVersion: "2.1.90"
