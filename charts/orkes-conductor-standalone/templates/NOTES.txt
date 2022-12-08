@@ -1,1 +1,0 @@
-You can access conductor using the service created by this helm chart
