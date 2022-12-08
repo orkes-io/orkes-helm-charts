@@ -1,3 +1,22 @@
+{{- if .Values.security.enabled -}}
+  {{- $validation := .Values.security.defaultUserEmail | required "security.defaultUserEmail is required." -}}
+  {{- $validation := .Values.security.defaultUserName | required "security.defaultUserName is required." -}}
+  {{- $validation := .Values.security.jwt.secret | required "security.jwt.secret is required." -}}
+  {{- $validation := .Values.security.auth0.clientId | required "security.auth0.clientId is required." -}}
+  {{- $validation := .Values.security.auth0.domain | required ".security.auth0.domain is required." -}}
+  {{- $validation := .Values.workers.accessKeyId | required "workers.accessKeyId is required." -}}
+  {{- $validation := .Values.workers.accessKeySecret | required "workers.accessKeySecret is required." -}}
+  {{- if not .Values.security.auth0.useIdToken -}}
+    {{- $validation := .Values.security.auth0.clientSecret | required "security.auth0.domain is required." -}}
+  {{- end -}}
+{{- end -}}
+{{- if eq .Values.app.archiveStoreType "s3" -}}
+  {{- $validation := .Values.app.documentStoreS3BucketName | required "app.documentStoreS3BucketName is required." -}}
+{{- end -}}
+{{- if eq .Values.app.archiveStoreType "azureblob" -}}
+  {{- $validation := .Values.app.documentStoreAzureBlobContainerName | required "app.documentStoreAzureBlobContainerName is required." -}}
+  {{- $validation := .Values.app.documentStoreAzureBlobEndpoint | required "app.documentStoreAzureBlobEndpoint is required." -}}
+{{- end -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -5,7 +24,7 @@ metadata:
   labels:
     {{- include "orkes-conductor.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.app.replicaCount }}
   selector:
     matchLabels:
       {{- include "orkes-conductor.selectorLabels" . | nindent 6 }}
@@ -20,90 +39,114 @@ spec:
     spec:
       containers:
         - env:
+            #### Env ####
             - name: cloud.env
               value:  {{ .Values.app.env }}
-            - name: conductor.redis-lock.serverAddress
-              value: redis://{{ .Values.redis.host }}:{{ .Values.redis.port }}
-            - name: conductor.redis-lock.serverPassword
-              value: {{ .Values.redis.password }}
-            - name: conductor.security.auth0.clientSecret
-              value: {{ .Values.security.auth0.clientSecret }}
-            - name: DEFAULT_USER_EMAIL
-              value: {{ .Values.security.defaultUserEmail }}
+            - name: DEPLOY_ENV
+              value: prod
+            - name: aws.region
+              value: {{ .Values.app.s3Region | quote }}
+            - name: JVM_MEMORY_SETTINGS
+              value: {{ .Values.app.jvmSettings | quote }}
             - name: SPRING_PROFILES_ACTIVE
               value: {{ .Values.app.springProfilesActive | quote }}
-            - name: conductor.archive.db.document.store.s3.region
-              value: {{ .Values.app.s3Region }}
-            - name: conductor.app.sweeper.sweepBatchSize
-              value: {{ .Values.app.sweepBatchSize | quote }}
+            #### Redis ####
+            - name: conductor.redis-lock.serverAddress
+              value: redis://{{ .Values.redis.host }}:{{ .Values.redis.port }}
+            {{- if .Values.redis.password }}
+            - name: conductor.redis-lock.serverPassword
+              value: {{ .Values.redis.password }}
+            - name: conductor.redis.hosts
+              value: {{ .Values.redis.host }}:{{ .Values.redis.port }}:us-east-1c:{{ .Values.redis.password }}
+            {{- else }}
+            - name: conductor.redis.hosts
+              value: {{ .Values.redis.host }}:{{ .Values.redis.port }}:us-east-1c
+            {{- end }}
+            #### Postgres ####
+            - name: spring.datasource.url
+              value: {{ .Values.postgres.url | quote }}
+            - name: spring.datasource.password
+              value: {{ .Values.postgres.password | quote }}
+            - name: spring.datasource.username
+              value: {{ .Values.postgres.username | quote }}
+            #### Security ####
+            - name: conductor.security.enabled
+              value: {{ .Values.security.enabled | quote }}
+            - name: conductor.security.default.overwrite
+              value: {{ .Values.security.overwriteDefault | quote }}
+            {{- if .Values.security.auth0.clientSecret }}
+            - name: conductor.security.auth0.clientSecret
+              value: {{ .Values.security.auth0.clientSecret | quote }}
+            {{ end }}
+            - name: conductor.security.auth0.useIdToken
+              value: {{ .Values.security.auth0.useIdToken | quote }}
+            - name: conductor.security.auth0.domain
+              value: {{ .Values.security.auth0.domain | quote }}
+            - name: DEFAULT_USER_EMAIL
+              value: {{ .Values.security.defaultUserEmail | quote }}
+            - name: DEFAULT_USER_NAME
+              value: {{ .Values.security.defaultUserName | quote }}
             - name: conductor.security.default.workers.accessKeyId
               value: {{ .Values.workers.accessKeyId | quote }}
             - name: conductor.security.default.workers.accessKeySecret
               value: {{ .Values.workers.accessKeySecret | quote }}
-            - name: conductor.scheduler.pollingInterval
-              value: {{ .Values.app.schedulerPollingInterval | quote }}
             - name: conductor.security.auth0.clientId
               value: {{ .Values.security.auth0.clientId | quote }}
             - name: conductor.security.jwt.secret
               value: {{ .Values.security.jwt.secret | quote }}
-            - name: conductor.app.lockTimeToTry
-              value: {{ .Values.app.lockTimeToTry | quote }}
-            - name: conductor.secrets.ssm.path
-              value: {{ .Values.security.ssmPath | quote }}
+            #### Archive ####
+            - name: conductor.archive.db.document.store.type
+              value: {{ .Values.app.archiveStoreType | quote }}
+            - name: conductor.archive.db.document.store.s3.region
+              value: {{ .Values.app.s3Region }}
             - name: conductor.archive.db.document.store.uploader.threadCount
               value: {{ .Values.app.documentStoreUploaderThreadCount | quote }}
-            - name: conductor.security.auth0.useIdToken
-              value: {{ .Values.security.auth0.useIdToken | quote }}
             - name: conductor.archive.db.indexer.threadCount
               value: {{ .Values.app.dbIndexerThreadCount | quote }}
             - name: conductor.archive.db.indexer.pollingInterval
               value: {{ .Values.app.dbIndexerPollingInterval | quote }}
-            - name: conductor.security.auth0.domain
-              value: {{ .Values.security.auth0.domain | quote }}
-            - name: spring.datasource.password
-              value: {{ .Values.postgres.password | quote }}
-            - name: conductor.swagger.url
-              value: {{ .Values.app.swaggerUrl | quote }}
-            - name: conductor.app.sweeperThreadCount
-              value: {{ .Values.app.sweeperThreadCount | quote }}
-            - name: conductor.security.enabled
-              value: {{ .Values.security.enabled | quote }}
-            - name: conductor.scheduler.pollBatchSize
-              value: {{ .Values.app.schedulerPollBatchSize | quote }}
-            - name: spring.datasource.username
-              value: {{ .Values.postgres.username | quote }}
-            - name: conductor.archive.db.indexer.pollBatchSize
-              value: {{ .Values.app.dbIndexerPollBatchSize | quote }}
-            - name: aws.region
-              value: {{ .Values.app.s3Region | quote }}
-            - name: spring.datasource.url
-              value: {{ .Values.postgres.url | quote }}
-            - name: conductor.sweep-frequency.millis
-              value: {{ .Values.app.sweepFrequencyMillis | quote }}
-            - name: JVM_MEMORY_SETTINGS
-              value: {{ .Values.app.jvmSettings | quote }}
-            - name: DEPLOY_ENV
-              value: prod
-            - name: conductor.app.systemTaskMaxPollCount
-              value: {{ .Values.app.systemTaskMaxPollCount | quote }}
-            - name: conductor.secrets.type
-              value: {{ .Values.app.secretsType | quote }}
-            - name: conductor.app.workflow-execution-lock-enabled
-              value: {{ .Values.app.workflowExecutionLockEnabled | quote }}
-            - name: DEFAULT_USER_NAME
-              value: {{ .Values.security.defaultUserName | quote }}
-            - name: conductor.redis.hosts
-              value: {{ .Values.redis.host }}:{{ .Values.redis.port }}:us-east-1c:{{ .Values.redis.password}}
-            - name: conductor.api.ratelimiter.enabled
-              value: {{ .Values.app.apiRateLimiterEnabled | quote }}
+            {{- if eq .Values.app.archiveStoreType "s3" }}
             - name: conductor.archive.db.document.store.s3.s3BucketName
               value: {{ .Values.app.documentStoreS3BucketName | quote }}
+            {{- end }}
+            {{- if eq .Values.app.archiveStoreType "azureblob" }}
             - name: conductor.archive.db.document.store.type.azureblob.containerName
               value: {{ .Values.app.documentStoreAzureBlobContainerName | quote }}
             - name: conductor.archive.db.document.store.type.azureblob.endpoint
               value: {{ .Values.app.documentStoreAzureBlobEndpoint | quote }}
-            - name: conductor.archive.db.document.store.type
-              value: {{ .Values.app.archiveStoreType | quote }}
+            {{- end }}
+            - name: conductor.archive.db.indexer.pollBatchSize
+              value: {{ .Values.app.dbIndexerPollBatchSize | quote }}
+            #### Sweeper ####
+            - name: conductor.app.sweeper.sweepBatchSize
+              value: {{ .Values.app.sweepBatchSize | quote }}
+            - name: conductor.app.sweeperThreadCount
+              value: {{ .Values.app.sweeperThreadCount | quote }}
+            - name: conductor.sweep-frequency.millis
+              value: {{ .Values.app.sweepFrequencyMillis | quote }}
+            #### Scheduler ####
+            - name: conductor.scheduler.pollBatchSize
+              value: {{ .Values.app.schedulerPollBatchSize | quote }}
+            - name: conductor.scheduler.pollingInterval
+              value: {{ .Values.app.schedulerPollingInterval | quote }}
+            #### Secrets ####
+            - name: conductor.secrets.type
+              value: {{ .Values.secrets.type | quote }}
+            {{- if .Values.secrets.ssmPath }}
+            - name: conductor.secrets.ssm.path
+              value: {{ .Values.secrets.ssmPath | quote }}
+            {{- end }}
+            #### Others ####
+            - name: conductor.swagger.url
+              value: {{ .Values.app.swaggerUrl | quote }}
+            - name: conductor.app.lockTimeToTry
+              value: {{ .Values.app.lockTimeToTry | quote }}
+            - name: conductor.app.systemTaskMaxPollCount
+              value: {{ .Values.app.systemTaskMaxPollCount | quote }}
+            - name: conductor.app.workflow-execution-lock-enabled
+              value: {{ .Values.app.workflowExecutionLockEnabled | quote }}
+            - name: conductor.api.ratelimiter.enabled
+              value: {{ .Values.app.apiRateLimiterEnabled | quote }}
             - name: LOCAL_HOST_IP
               valueFrom:
                 fieldRef:
@@ -166,22 +209,24 @@ spec:
     spec:
       containers:
         - env:
-            - name: conductor.worker.http.block.hosts
-              value: localhost
-            - name: SPRING_PROFILES_ACTIVE
-              value: {{ .Values.workers.springProfilesActive | quote }}
             - name: DEPLOY_ENV
               value: prod
+            - name: JVM_MEMORY_SETTINGS
+              value: {{ .Values.workers.jvmSettings | quote }}
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .Values.workers.springProfilesActive | quote }}
+            - name: conductor.worker.http.block.hosts
+              value: localhost
+            - name: conductor.worker.http.block.ips
+              value: {{ .Values.workers.blockIps | quote }}
             - name: conductor.server.url
               value: http://{{ include "orkes-conductor.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:5000/api/
+            {{- if .Values.security.enabled }}
             - name: conductor.security.client.key-id
               value: {{ .Values.workers.accessKeyId | quote }}
             - name: conductor.security.client.secret
               value: {{ .Values.workers.accessKeySecret | quote }}
-            - name: conductor.worker.http.block.ips
-              value: {{ .Values.workers.blockIps | quote }}
-            - name: JVM_MEMORY_SETTINGS
-              value: {{ .Values.workers.jvmSettings | quote }}
+            {{- end }}
             - name: LOCAL_HOST_IP
               valueFrom:
                 fieldRef:

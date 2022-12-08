@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "required": [
+    "service",
+    "image",
+    "workerImage",
+    "app",
+    "secrets",
+    "workers",
+    "redis",
+    "postgres",
+    "imageCredentials",
+    "security"
+  ],
+  "properties": {
+    "app": {
+      "type": "object",
+      "required": [
+        "replicaCount",
+        "env",
+        "archiveStoreType"
+      ],
+      "properties": {
+        "replicaCount": {
+          "type": "integer"
+        },
+        "env": {
+          "type": "string",
+          "enum": [
+            "aws",
+            "azure",
+            "gcp"
+          ]
+        },
+        "archiveStoreType": {
+          "type": "string",
+          "enum": [
+            "azureblob",
+            "gcp",
+            "postgres",
+            "s3"
+          ]
+        }
+      }
+    },
+    "secrets": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "azkv",
+            "memory",
+            "ssm"
+          ]
+        }
+      }
+    },
+    "workers": {
+      "type": "object",
+      "required": [
+        "replicaCount"
+      ],
+      "properties": {
+        "replicaCount": {
+          "type": "integer"
+        }
+      }
+    },
+    "redis": {
+      "type": "object",
+      "required": [
+        "host",
+        "port",
+        "password"
+      ],
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        }
+      }
+    },
+    "postgres": {
+      "type": "object",
+      "required": [
+        "username",
+        "password",
+        "url"
+      ],
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "imageCredentials": {
+      "type": "object",
+      "required": [
+        "registry",
+        "username",
+        "password",
+        "email"
+      ],
+      "properties": {
+        "registry": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "required": [
+        "overwriteDefault",
+        "defaultUserEmail",
+        "defaultUserName",
+        "enabled",
+        "jwt"
+      ],
+      "properties": {
+        "jwt": {
+          "type": "object",
+          "required": [
+            "secret"
+          ]
+        }
+      }
+    }
+  }
+}
