@@ -76,7 +76,8 @@
       "required": [
         "host",
         "port",
-        "password"
+        "password",
+        "ssl"
       ],
       "properties": {
         "host": {
@@ -84,6 +85,9 @@
         },
         "port": {
           "type": "integer"
+        },
+        "ssl": {
+          "type": "boolean"
         }
       }
     },
@@ -132,18 +136,26 @@
     "security": {
       "type": "object",
       "required": [
+        "enabled",
         "overwriteDefault",
         "defaultUserEmail",
         "defaultUserName",
-        "enabled",
         "jwt"
       ],
       "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "overwriteDefault": {
+          "type": "boolean"
+        },
         "jwt": {
           "type": "object",
-          "required": [
-            "secret"
-          ]
+          "properties": {
+            "secret": {
+              "type": "string"
+            }
+          }
         }
       }
     }

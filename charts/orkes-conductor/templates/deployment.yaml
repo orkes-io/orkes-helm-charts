@@ -17,6 +17,12 @@
   {{- $validation := .Values.app.documentStoreAzureBlobContainerName | required "app.documentStoreAzureBlobContainerName is required." -}}
   {{- $validation := .Values.app.documentStoreAzureBlobEndpoint | required "app.documentStoreAzureBlobEndpoint is required." -}}
 {{- end -}}
+{{- $redisHosts := printf "%v:%v:%v" .Values.redis.host .Values.redis.port "us-east-1c" -}}
+{{- if .Values.redis.password -}}
+  {{- $redisHosts := printf "%v:%v" $redisHosts .Values.redis.password -}}
+{{- end -}}
+{{- $redisUriScheme := .Values.redis.ssl | ternary "rediss" "redis" -}}
+{{- $redisLockServerAddress := printf "%v://%v:%v" $redisUriScheme .Values.redis.host .Values.redis.port -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -41,7 +47,7 @@ spec:
         - env:
             #### Env ####
             - name: cloud.env
-              value:  {{ .Values.app.env }}
+              value: {{ .Values.app.env }}
             - name: DEPLOY_ENV
               value: prod
             - name: aws.region
@@ -51,16 +57,15 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: {{ .Values.app.springProfilesActive | quote }}
             #### Redis ####
+            - name: conductor.redis.hosts
+              value: {{ $redisHosts | quote }}
+            - name: conductor.redis.ssl
+              value: {{ .Values.redis.ssl | quote }}
             - name: conductor.redis-lock.serverAddress
-              value: redis://{{ .Values.redis.host }}:{{ .Values.redis.port }}
+              value: {{ $redisLockServerAddress | quote }}
             {{- if .Values.redis.password }}
             - name: conductor.redis-lock.serverPassword
               value: {{ .Values.redis.password }}
-            - name: conductor.redis.hosts
-              value: {{ .Values.redis.host }}:{{ .Values.redis.port }}:us-east-1c:{{ .Values.redis.password }}
-            {{- else }}
-            - name: conductor.redis.hosts
-              value: {{ .Values.redis.host }}:{{ .Values.redis.port }}:us-east-1c
             {{- end }}
             #### Postgres ####
             - name: spring.datasource.url
@@ -74,6 +79,8 @@ spec:
               value: {{ .Values.security.enabled | quote }}
             - name: conductor.security.default.overwrite
               value: {{ .Values.security.overwriteDefault | quote }}
+            - name: conductor.security.auth0.clientId
+              value: {{ .Values.security.auth0.clientId | quote }}
             {{- if .Values.security.auth0.clientSecret }}
             - name: conductor.security.auth0.clientSecret
               value: {{ .Values.security.auth0.clientSecret | quote }}
@@ -90,8 +97,6 @@ spec:
               value: {{ .Values.workers.accessKeyId | quote }}
             - name: conductor.security.default.workers.accessKeySecret
               value: {{ .Values.workers.accessKeySecret | quote }}
-            - name: conductor.security.auth0.clientId
-              value: {{ .Values.security.auth0.clientId | quote }}
             - name: conductor.security.jwt.secret
               value: {{ .Values.security.jwt.secret | quote }}
             #### Archive ####

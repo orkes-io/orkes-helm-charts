@@ -64,8 +64,9 @@ workers:
     memoryRequests: "1Gi"
 
 redis:
-  host:
   port: 6379
+  ssl: false
+  host:
   password:
 
 postgres:
@@ -88,7 +89,7 @@ security:
   defaultUserName:
   # SECRET TO SIGN JWTs  (For example use this: openssl rand -base64 172 | tr -d '\n')
   jwt:
-    secret:
+    secret: ""
   # Create an account in Auth0, Create a SPA - get the id and secret and domain for the following info
   auth0:
     useIdToken: true
