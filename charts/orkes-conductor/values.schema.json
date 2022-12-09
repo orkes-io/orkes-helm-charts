@@ -17,7 +17,6 @@
     "app": {
       "type": "object",
       "required": [
-        "replicaCount",
         "env",
         "archiveStoreType"
       ],
@@ -41,14 +40,19 @@
             "postgres",
             "s3"
           ]
+        },
+        "secretsType": {
+          "type": "string",
+          "enum": [
+            "azkv",
+            "memory",
+            "ssm"
+          ]
         }
       }
     },
     "secrets": {
       "type": "object",
-      "required": [
-        "type"
-      ],
       "properties": {
         "type": {
           "type": "string",
@@ -76,15 +80,14 @@
       "required": [
         "host",
         "port",
-        "password",
-        "ssl"
+        "password"
       ],
       "properties": {
         "host": {
           "type": "string"
         },
         "port": {
-          "type": "integer"
+          "type": ["integer", "string"]
         },
         "ssl": {
           "type": "boolean"
@@ -144,7 +147,7 @@
       ],
       "properties": {
         "enabled": {
-          "type": "boolean"
+          "type": ["boolean", "string"]
         },
         "type": {
           "type": "string",
@@ -174,7 +177,7 @@
           ],
           "properties": {
             "useIdToken": {
-              "type": "boolean"
+              "type": ["boolean", "string"]
             },
             "clientId": {
               "type": "string"
