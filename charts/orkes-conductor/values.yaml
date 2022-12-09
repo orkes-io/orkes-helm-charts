@@ -17,7 +17,7 @@ app:
   replicaCount: 3
   env: aws
   s3Region: "us-east-1"
-  springProfilesActive: "security,logrotate,postgres"
+  springProfilesActive: "logrotate,postgres"
   sweepBatchSize: "20"
   schedulerPollingInterval: "50"
   lockTimeToTry: "75"
@@ -85,14 +85,21 @@ imageCredentials:
 security:
   enabled: true
   overwriteDefault: true
+  createUserOnAuthentication: false
   defaultUserEmail:
   defaultUserName:
   # SECRET TO SIGN JWTs  (For example use this: openssl rand -base64 172 | tr -d '\n')
   jwt:
     secret: ""
-  # Create an account in Auth0, Create a SPA - get the id and secret and domain for the following info
-  auth0:
-    useIdToken: true
-    clientSecret:
-    clientId:
-    domain:
+# Create an account in Auth0, Create a SPA - get the the following info.
+# clientSecret is only needed if useIdToken: false
+#  auth0:
+#    useIdToken: true
+#    clientSecret:
+#    clientId:
+#    domain:
+#  Get this config from your OIDC Provider
+#  oidc:
+#    clientId:
+#    audience:
+#    metadataUrl:

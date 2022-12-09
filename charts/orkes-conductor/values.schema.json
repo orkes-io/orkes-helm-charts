@@ -146,6 +146,13 @@
         "enabled": {
           "type": "boolean"
         },
+        "type": {
+          "type": "string",
+          "enum": [
+            "auth0",
+            "oidc"
+          ]
+        },
         "overwriteDefault": {
           "type": "boolean"
         },
@@ -153,6 +160,47 @@
           "type": "object",
           "properties": {
             "secret": {
+              "type": "string"
+            }
+          }
+        },
+        "auth0": {
+          "type": [
+            "object"
+          ],
+          "required" : [
+            "clientId",
+            "domain"
+          ],
+          "properties": {
+            "useIdToken": {
+              "type": "boolean"
+            },
+            "clientId": {
+              "type": "string"
+            },
+            "domain": {
+              "type": "string"
+            }
+          }
+        },
+        "oidc": {
+          "type": [
+            "object"
+          ],
+          "required": [
+            "clientId",
+            "audience",
+            "metadataUrl"
+          ],
+          "properties": {
+            "clientId": {
+              "type": "string"
+            },
+            "audience": {
+              "type": "string"
+            },
+            "metadataUrl": {
               "type": "string"
             }
           }
