@@ -1,0 +1,28 @@
+app:
+  replicaCount: 1
+  jvmSettings: "-Xms256M -Xmx384M"
+  resources:
+    cpuLimit: "1"
+    memoryLimit: "512M"
+    cpuRequests: "1"
+    memoryRequests: "512M"
+
+workers:
+  replicaCount: 1
+  jvmSettings: "-Xms256M -Xmx384M"
+  resources:
+    cpuLimit: "1"
+    memoryLimit: "512M"
+    cpuRequests: "1"
+    memoryRequests: "512M"
+
+security:
+  enabled: false
+
+redis:
+  host: redis
+
+postgres:
+  username: postgres
+  password: postgres
+  url: jdbc:postgresql://postgres:5432/conductordb
