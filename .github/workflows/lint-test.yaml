@@ -1,8 +1,10 @@
-# setup tests like https://github.com/grafana/helm-charts/actions/runs/3656065268/jobs/6178080426
 # SEE: https://github.com/helm/chart-testing-action
 name: Lint and Test Charts
 
 on: pull_request
+
+env:
+  CONFIG_FILE: ct.yaml
 
 jobs:
   lint-test:
@@ -35,7 +37,7 @@ jobs:
             echo "::set-output name=changed::true"
           fi
       - name: Run chart-testing (lint)
-        run: ct lint --target-branch ${{ github.event.repository.default_branch }} --charts charts/orkes-conductor
+        run: ct lint --config "${CONFIG_FILE}" --target-branch ${{ github.event.repository.default_branch }} --charts charts/orkes-conductor
 
       - name: Create kind cluster
         uses: helm/kind-action@v1.4.0
@@ -46,4 +48,4 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
 
       - name: Run chart-testing (install)
-        run: ct install --set --helm-extra-set-args="--set=imageCredentials.password=${{ secrets.DOCKER_HUB_TOKEN }}" --charts charts/orkes-conductor
+        run: ct install --config "${CONFIG_FILE}" --set --helm-extra-set-args="--set=imageCredentials.password=${{ secrets.DOCKER_HUB_TOKEN }}" --charts charts/orkes-conductor
