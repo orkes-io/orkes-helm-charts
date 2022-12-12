@@ -33,9 +33,9 @@ app:
   systemTaskMaxPollCount: "20"
   workflowExecutionLockEnabled: "true"
   apiRateLimiterEnabled: "true"
-  # Required if archiveStoreType = s3
+  # documentStoreS3BucketName: Required if archiveStoreType = s3
   documentStoreS3BucketName:
-  # Required if archiveStoreType = azureblob
+  # documentStoreAzureBlobContainerName, documentStoreAzureBlobEndpoint: Required if archiveStoreType = azureblob
   documentStoreAzureBlobContainerName:
   documentStoreAzureBlobEndpoint:
   # postgres, s3, azureblob, gcp
@@ -52,8 +52,8 @@ secrets:
 
 workers:
   replicaCount: 2
-  accessKeyId:  #  KEY ID (RANDOM VALUE)
-  accessKeySecret:  # SECRET (RANDOM VALUE)
+  accessKeyId:  #  Key ID (random value)
+  accessKeySecret:  # Secret (secret value)
   springProfilesActive: "logrotate"
   blockIps: "127.0.0.1"
   jvmSettings: "-Xms750M -Xmx2000M"
@@ -81,12 +81,12 @@ imageCredentials:
   password:
 
 security:
-  enabled: true
+  enabled: false
   overwriteDefault: true
   createUserOnAuthentication: false
   defaultUserEmail:
   defaultUserName:
-  # SECRET TO SIGN JWTs  (For example use this: openssl rand -base64 172 | tr -d '\n')
+  # Secret used to sign JWTs. How to generate it? openssl rand -base64 172 | tr -d '\n'
   jwt:
     secret: ""
 # Create an account in Auth0, Create a SPA - get the the following info.

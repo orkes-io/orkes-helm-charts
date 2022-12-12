@@ -15,6 +15,8 @@ workers:
     memoryLimit: "512M"
     cpuRequests: "0.5"
     memoryRequests: "512M"
+  accessKeyId: the-key-id
+  accessKeySecret: the-secret
 
 redis:
   host: redis
@@ -28,4 +30,12 @@ imageCredentials:
   password: ""
 
 security:
-  enabled: false
+  enabled: true
+  defaultUserEmail: orkes.helm.test@orkes.io
+  defaultUserName: Orkes Helm
+  jwt:
+    secret: JWT_S3CR3T
+  auth0:
+    clientId: test-client-id
+    domain: test-domain.us.auth0.com
+    useIdToken: true
