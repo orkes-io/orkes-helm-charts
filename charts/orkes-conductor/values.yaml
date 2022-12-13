@@ -106,3 +106,4 @@ security:
 #    audience:
 #    issuer:
 #    useInteractionCodeFlow:
+#    idps:

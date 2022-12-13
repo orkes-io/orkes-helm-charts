@@ -146,6 +146,10 @@ spec:
               value: {{ .Values.security.okta.issuer | quote }}
             - name: conductor.security.okta.useInteractionCodeFlow
               value: {{ .Values.security.okta.useInteractionCodeFlow | quote }}
+            {{- if .Values.security.okta.idpConf }}
+            - name: conductor.security.okta.idpConf
+              value: {{ .Values.security.okta.idpConf }}
+            {{- end }}
             {{- end }}
             {{- end }}
             #### Archive ####
