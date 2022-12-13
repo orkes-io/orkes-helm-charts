@@ -106,4 +106,9 @@ security:
 #    audience:
 #    issuer:
 #    useInteractionCodeFlow:
-#    idps:
+#    idpConf:
+#    sync:
+#      org:
+#      clientId:
+#      frequency:
+#      privateKey:

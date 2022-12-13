@@ -150,6 +150,20 @@ spec:
             - name: conductor.security.okta.idpConf
               value: {{ .Values.security.okta.idpConf }}
             {{- end }}
+            {{- if .Values.security.okta.sync }}
+            - name: conductor.security.okta.sync.enabled
+              value: "true"
+            {{- if .Values.security.okta.sync.frequency }}
+            - name: conductor.security.okta.sync.frequency
+              value: {{ .Values.security.okta.sync.frequency | quote }}
+            {{- end }}
+            - name: conductor.security.okta.sync.org
+              value: {{ .Values.security.okta.sync.org }}
+            - name: conductor.security.okta.sync.clientId
+              value: {{ .Values.security.okta.sync.clientId }}
+            - name: conductor.security.okta.sync.privateKey
+              value: {{- .Values.security.okta.sync.privateKey | toYaml | indent 14 }}
+            {{- end }}
             {{- end }}
             {{- end }}
             #### Archive ####
