@@ -13,7 +13,14 @@
     {{- end -}}
   {{- end -}}
   {{- if .Values.security.oidc -}}
-    {{- $validation := .Values.security.oidc | required "security.oidc properties are required." -}}
+    {{- $validation := .Values.security.oidc.clientId | required "security.oidc.clientId is required." -}}
+    {{- $validation := .Values.security.oidc.audience | required "security.oidc.audience is required." -}}
+    {{- $validation := .Values.security.oidc.metadataUrl | required "security.oidc.metadataUrl is required." -}}
+  {{- end -}}
+  {{- if .Values.security.okta -}}
+    {{- $validation := .Values.security.okta.clientId | required "security.okta.clientId is required." -}}
+    {{- $validation := .Values.security.okta.audience | required "security.okta.audience is required." -}}
+    {{- $validation := .Values.security.okta.issuer | required "security.okta.issuer is required." -}}
   {{- end -}}
 {{- end -}}
 {{- if eq .Values.app.archiveStoreType "s3" -}}
@@ -128,6 +135,17 @@ spec:
               value: {{ .Values.security.oidc.audience | quote }}
             - name: conductor.security.oidc.metadataUrl
               value: {{ .Values.security.oidc.metadataUrl | quote }}
+            {{- end }}
+            {{- if .Values.security.okta }}
+            #### Security - OKTA ####
+            - name: conductor.security.okta.clientId
+              value: {{ .Values.security.okta.clientId | quote }}
+            - name: conductor.security.okta.audience
+              value: {{ .Values.security.okta.audience | quote }}
+            - name: conductor.security.okta.issuer
+              value: {{ .Values.security.okta.issuer | quote }}
+            - name: conductor.security.okta.useInteractionCodeFlow
+              value: {{ .Values.security.okta.useInteractionCodeFlow | quote }}
             {{- end }}
             {{- end }}
             #### Archive ####

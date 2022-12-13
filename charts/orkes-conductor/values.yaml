@@ -101,3 +101,8 @@ security:
 #    clientId:
 #    audience:
 #    metadataUrl:
+#  okta:
+#    clientId:
+#    audience:
+#    issuer:
+#    useInteractionCodeFlow:
