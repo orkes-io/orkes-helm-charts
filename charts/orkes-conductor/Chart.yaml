@@ -1,6 +1,6 @@
 apiVersion: v2
 name: orkes-conductor
-description: Helm Chart for Deploying Orkes Conductor
+description: Orkes Conductor
 
 type: application
 

@@ -1,0 +1,41 @@
+app:
+  replicaCount: 1
+  jvmSettings: "-Xms256M -Xmx384M"
+  resources:
+    cpuLimit: "0.5"
+    memoryLimit: "512M"
+    cpuRequests: "0.5"
+    memoryRequests: "512M"
+
+workers:
+  replicaCount: 1
+  jvmSettings: "-Xms256M -Xmx384M"
+  resources:
+    cpuLimit: "0.5"
+    memoryLimit: "512M"
+    cpuRequests: "0.5"
+    memoryRequests: "512M"
+  accessKeyId: the-key-id
+  accessKeySecret: the-secret
+
+redis:
+  host: redis
+
+postgres:
+  username: postgres
+  password: postgres
+  url: jdbc:postgresql://postgres:5432/conductordb
+
+imageCredentials:
+  password: ""
+
+security:
+  enabled: true
+  defaultUserEmail: orkes.helm.test@orkes.io
+  defaultUserName: Orkes Helm
+  jwt:
+    secret: JWT_S3CR3T
+  okta:
+    clientId: test-client-id
+    audience: test-audience
+    issuer: https://dev-00001.okta.com/oauth2/5858knkKMNxxx

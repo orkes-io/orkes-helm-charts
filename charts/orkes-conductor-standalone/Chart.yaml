@@ -1,11 +1,8 @@
 apiVersion: v2
 name: orkes-conductor-standalone
-description: A Helm chart for Kubernetes
+description: Orkes Conductor Standalone (recommended only for testing and development)
 
 type: application
 
-# This is the chart version. This version number should be incremented each time you make changes
-# to the chart and its templates, including the app version.
-# Versions are expected to follow Semantic Versioning (https://semver.org/)
 version: 2.2.92
 appVersion: "2.1.90"
