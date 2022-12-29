@@ -5,7 +5,6 @@ service:
 
 image:
   repository: orkesio/orkes-conductor-standalone
-  tag: 2.1.90
   pullPolicy: Always
   livenessPort: 5000
 

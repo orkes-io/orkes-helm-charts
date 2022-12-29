@@ -4,13 +4,11 @@ service:
 
 image:
   repository: orkesio/orkes-conductor-server
-  tag: 2.1.90
   pullPolicy: Always
   livenessPort: 5000
 
 workerImage:
   repository: orkesio/orkes-conductor-workers
-  tag: 2.1.90
   pullPolicy: Always
 
 app:
