@@ -32,7 +32,7 @@
 {{- end -}}
 {{- $redisHosts := printf "%v:%v:%v" .Values.redis.host .Values.redis.port "us-east-1c" -}}
 {{- if .Values.redis.password -}}
-  {{- $redisHosts := printf "%v:%v" $redisHosts .Values.redis.password -}}
+  {{- $redisHosts = printf "%v:%v" $redisHosts .Values.redis.password -}}
 {{- end -}}
 {{- $redisUriScheme := .Values.redis.ssl | ternary "rediss" "redis" -}}
 {{- $redisLockServerAddress := printf "%v://%v:%v" $redisUriScheme .Values.redis.host .Values.redis.port -}}
