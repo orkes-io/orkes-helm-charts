@@ -99,6 +99,7 @@ security:
 #    clientId:
 #    audience:
 #    metadataUrl:
+#    emailClaim:
 #  okta:
 #    clientId:
 #    audience:

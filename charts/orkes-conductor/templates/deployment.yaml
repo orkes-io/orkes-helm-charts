@@ -135,6 +135,8 @@ spec:
               value: {{ .Values.security.oidc.audience | quote }}
             - name: conductor.security.oidc.metadataUrl
               value: {{ .Values.security.oidc.metadataUrl | quote }}
+            - name: conductor.security.oidc.claims.email
+              value: {{ .Values.security.oidc.emailClaim | quote }}
             {{- end }}
             {{- if .Values.security.okta }}
             #### Security - OKTA ####
