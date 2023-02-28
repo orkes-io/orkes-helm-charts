@@ -79,8 +79,7 @@
       "type": "object",
       "required": [
         "host",
-        "port",
-        "password"
+        "port"
       ],
       "properties": {
         "host": {
@@ -98,7 +97,6 @@
       "type": "object",
       "required": [
         "username",
-        "password",
         "url"
       ],
       "properties": {
