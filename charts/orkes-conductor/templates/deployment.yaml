@@ -91,7 +91,10 @@ spec:
             - name: spring.datasource.url
               value: {{ .Values.postgres.url | quote }}
             - name: spring.datasource.password
-              value: {{ .Values.postgres.password | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: orkesdeploymentsecrets
+                  key: postgrespassword
             - name: spring.datasource.username
               value: {{ .Values.postgres.username | quote }}
             {{- if $securityEnabled }}
@@ -113,14 +116,21 @@ spec:
             - name: conductor.security.default.workers.accessKeySecret
               value: {{ .Values.workers.accessKeySecret | quote }}
             - name: conductor.security.jwt.secret
-              value: {{ .Values.security.jwt.secret | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: orkesdeploymentsecrets
+                  key: jwtsecret
             {{- if .Values.security.auth0 }}
             #### Security - Auth0 ####
             - name: conductor.security.auth0.clientId
               value: {{ .Values.security.auth0.clientId | quote }}
             {{- if .Values.security.auth0.clientSecret }}
             - name: conductor.security.auth0.clientSecret
-              value: {{ .Values.security.auth0.clientSecret | quote }}
+#              value: {{ .Values.security.auth0.clientSecret | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: orkesdeploymentsecrets
+                  key: clientsecret
             {{- end }}
             - name: conductor.security.auth0.useIdToken
               value: {{ ne (toString .Values.security.auth0.useIdToken) "false" | quote }}
@@ -164,7 +174,11 @@ spec:
             - name: conductor.security.okta.sync.clientId
               value: {{ .Values.security.okta.sync.clientId }}
             - name: conductor.security.okta.sync.privateKey
-              value: {{- .Values.security.okta.sync.privateKey | toYaml | indent 14 }}
+#              value: {{- .Values.security.okta.sync.privateKey | toYaml | indent 14 }}
+              valueFrom:
+                secretKeyRef:
+                  name: orkesdeploymentsecrets
+                  key: privatekey
             {{- end }}
             {{- end }}
             {{- end }}

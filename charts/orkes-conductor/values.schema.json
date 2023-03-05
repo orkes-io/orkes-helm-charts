@@ -105,9 +105,6 @@
         "username": {
           "type": "string"
         },
-        "password": {
-          "type": "string"
-        },
         "url": {
           "type": "string"
         }
@@ -159,14 +156,7 @@
         "overwriteDefault": {
           "type": "boolean"
         },
-        "jwt": {
-          "type": "object",
-          "properties": {
-            "secret": {
-              "type": "string"
-            }
-          }
-        },
+       
         "auth0": {
           "type": [
             "object"
