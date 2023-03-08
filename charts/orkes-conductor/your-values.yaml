@@ -1,0 +1,113 @@
+service:
+  port: 5000
+  appPort: 8080
+
+image:
+  repository: orkesio/orkes-conductor-server
+  pullPolicy: Always
+  livenessPort: 5000
+
+workerImage:
+  repository: orkesio/orkes-conductor-workers
+  pullPolicy: Always
+
+app:
+  replicaCount: 3
+  env: aws
+  s3Region: "us-east-1"
+  springProfilesActive: "logrotate,postgres"
+  sweepBatchSize: "20"
+  schedulerPollingInterval: "50"
+  lockTimeToTry: "75"
+  documentStoreUploaderThreadCount: "15"
+  dbIndexerThreadCount: "5"
+  dbIndexerPollingInterval: "1"
+  swaggerUrl: "/"
+  sweeperThreadCount: "20"
+  schedulerPollBatchSize: "10"
+  dbIndexerPollBatchSize: "30"
+  sweepFrequencyMillis: "1"
+  jvmSettings: "-Xms1500M -Xmx3000M"
+  systemTaskMaxPollCount: "20"
+  workflowExecutionLockEnabled: "true"
+  apiRateLimiterEnabled: "true"
+  # documentStoreS3BucketName: Required if archiveStoreType = s3
+  documentStoreS3BucketName:
+  # documentStoreAzureBlobContainerName, documentStoreAzureBlobEndpoint: Required if archiveStoreType = azureblob
+  documentStoreAzureBlobContainerName:
+  documentStoreAzureBlobEndpoint:
+  # postgres, s3, azureblob, gcp
+  archiveStoreType: "postgres"
+  resources:
+    cpuLimit: "3"
+    memoryLimit: "3Gi"
+    cpuRequests: "2"
+    memoryRequests: "2Gi"
+
+secrets:
+  type: memory
+  ssmPath:
+
+workers:
+  replicaCount: 2
+  accessKeyId:  #  Key ID (random value)
+  accessKeySecret:  # Secret (secret value)
+  springProfilesActive: "logrotate"
+  blockIps: "127.0.0.1"
+  jvmSettings: "-Xms750M -Xmx2000M"
+  resources:
+    cpuLimit: "2"
+    memoryLimit: "2Gi"
+    cpuRequests: "1"
+    memoryRequests: "1Gi"
+
+redis:
+  port: 6379
+  ssl: false
+  host: "redis"
+  password: "redis12"
+
+postgres:
+  username: "postgres"
+  password: "postgres123"
+  url: "jdbc:postgresql://postgresql:5432/postgres" 
+
+imageCredentials:
+  registry: https://index.docker.io/v1/
+  username: orkesdocker
+  email: dockeracess@orkes.io
+  password: dckr_pat_XiY_YS_a3WrBQjmO37y6Q56VrE4
+
+security:
+  enabled: false
+  overwriteDefault: true
+  createUserOnAuthentication: false
+  defaultUserEmail: neethuraphel1992@gmail.com
+  defaultUserName: neethucleetus
+  # Secret used to sign JWTs. How to generate it? openssl rand -base64 172 | tr -d '\n'
+  jwt:
+    secret: ""
+# Create an account in Auth0, Create a SPA - get the the following info.
+# clientSecret is only needed if useIdToken: false
+#  auth0:
+#    useIdToken: true
+#    clientSecret:
+#    clientId:
+#    domain:
+#  Get this config from your OIDC Provider
+#  oidc:
+#    clientId:
+#    audience:
+#    metadataUrl:
+#    emailClaim:
+#  okta:
+#    clientId:
+#    audience:
+#    issuer:
+#    useInteractionCodeFlow:
+#    idpConf:
+#    sync:
+#      org:
+#      clientId:
+#      frequency:
+#      privateKey:
