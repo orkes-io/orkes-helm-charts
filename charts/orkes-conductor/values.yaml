@@ -64,8 +64,7 @@ workers:
 redis:
   port: 6379
   ssl: false
-  host: "redis"
-  password: "redis12"
+  host: "redis"  
 
 postgres:
   username: "postgres"
