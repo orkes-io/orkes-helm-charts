@@ -98,7 +98,6 @@
       "type": "object",
       "required": [
         "username",
-        "password",
         "url"
       ],
       "properties": {
@@ -139,8 +138,7 @@
         "enabled",
         "overwriteDefault",
         "defaultUserEmail",
-        "defaultUserName",
-        "jwt"
+        "defaultUserName"
       ],
       "properties": {
         "enabled": {

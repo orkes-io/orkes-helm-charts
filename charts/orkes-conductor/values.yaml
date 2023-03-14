@@ -69,10 +69,6 @@ redis:
 
 postgres:
   username: "postgres"
-  password:
-  secretKeyRef:
-    name: orkesdeploymentsecrets
-    key: postgrespassword
   url: "jdbc:postgresql://postgresql:5432/postgres" 
 
 imageCredentials:
@@ -87,20 +83,9 @@ security:
   createUserOnAuthentication: false
   defaultUserEmail: neethuraphel1992@gmail.com
   defaultUserName: neethucleetus
-  # Secret used to sign JWTs. How to generate it? openssl rand -base64 172 | tr -d '\n'
-  jwt:
-    secret: 
-      secretKeyRef:
-        name: orkesdeploymentsecrets
-        key: jwtsecret
 # Create an account in Auth0, Create a SPA - get the the following info.
-# clientSecret is only needed if useIdToken: false
 #  auth0:
 #    useIdToken: true
-#    clientSecret:
-#      secretKeyRef:
-#        name: orkesdeploymentsecrets
-#        key: clientsecret
 #    clientId:
 #    domain:
 #  Get this config from your OIDC Provider
@@ -119,7 +104,3 @@ security:
 #      org:
 #      clientId:
 #      frequency:
-#      privateKey:
-#        secretKeyRef:
-#          name: orkesdeploymentsecrets
-#          key: privatekey
