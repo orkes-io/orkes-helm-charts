@@ -30,7 +30,6 @@
   {{- $validation := .Values.app.documentStoreAzureBlobContainerName | required "app.documentStoreAzureBlobContainerName is required." -}}
   {{- $validation := .Values.app.documentStoreAzureBlobEndpoint | required "app.documentStoreAzureBlobEndpoint is required." -}}
 {{- end -}}
-{{- $redisPassword := printf "redis12" }}
 {{- $secret := default (dict "data" (dict)) (lookup "v1" "Secret" .Release.Namespace "orkesdeploymentsecrets") }}
 {{- if $secret.data.redispassword }}
   {{- $redisPassword := $secret.data.redispassword | b64dec }}
