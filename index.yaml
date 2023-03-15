@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   orkes-conductor:
   - apiVersion: v2
+    appVersion: 2.4.2
+    created: "2023-03-15T06:08:20.970658706Z"
+    description: Orkes Conductor
+    digest: 1fa09be825769000ca07fd998e5950f91a9f27aba75d0258239f1a21b469f134
+    name: orkes-conductor
+    type: application
+    urls:
+    - https://github.com/orkes-io/orkes-helm-charts/releases/download/orkes-conductor-2.4.2/orkes-conductor-2.4.2.tgz
+    version: 2.4.2
+  - apiVersion: v2
     appVersion: 2.4.0
     created: "2023-03-15T05:55:48.258123643Z"
     description: Orkes Conductor
@@ -274,6 +284,16 @@ entries:
     version: 1.0.0
   orkes-conductor-standalone:
   - apiVersion: v2
+    appVersion: 2.4.2
+    created: "2023-03-15T06:08:21.128104681Z"
+    description: Orkes Conductor Standalone (recommended only for testing and development)
+    digest: b76fcc184682592015be37d942cd307412ed9e261e09a18340a808b688723794
+    name: orkes-conductor-standalone
+    type: application
+    urls:
+    - https://github.com/orkes-io/orkes-helm-charts/releases/download/orkes-conductor-standalone-2.4.2/orkes-conductor-standalone-2.4.2.tgz
+    version: 2.4.2
+  - apiVersion: v2
     appVersion: 2.4.0
     created: "2023-03-15T05:55:48.450669566Z"
     description: Orkes Conductor Standalone (recommended only for testing and development)
@@ -513,4 +533,4 @@ entries:
     urls:
     - https://github.com/orkes-io/orkes-helm-charts/releases/download/orkes-conductor-standalone-0.1.0/orkes-conductor-standalone-0.1.0.tgz
     version: 0.1.0
-generated: "2023-03-15T05:55:48.451094075Z"
+generated: "2023-03-15T06:08:21.128537672Z"
