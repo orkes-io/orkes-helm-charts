@@ -30,15 +30,6 @@
   {{- $validation := .Values.app.documentStoreAzureBlobContainerName | required "app.documentStoreAzureBlobContainerName is required." -}}
   {{- $validation := .Values.app.documentStoreAzureBlobEndpoint | required "app.documentStoreAzureBlobEndpoint is required." -}}
 {{- end -}}
-{{- $redisPassword := printf "redis12" }}
-{{- $secret := default (dict "data" (dict)) (lookup "v1" "Secret" .Release.Namespace "orkesdeploymentsecrets") }}
-{{- if $secret.data.redispassword }}
-  {{- $redisPassword := $secret.data.redispassword | b64dec }}
-{{- end }}
-{{- $redisHosts := printf "%v:%v:%v" .Values.redis.host .Values.redis.port "us-east" -}}
-{{- if $redisPassword -}}
-  {{- $redisHosts = printf "%v:%v" $redisHosts $redisPassword -}}
-{{- end -}}
 {{- $redisUriScheme := .Values.redis.ssl | ternary "rediss" "redis" -}}
 {{- $redisLockServerAddress := printf "%v://%v:%v" $redisUriScheme .Values.redis.host .Values.redis.port -}}
 {{- /*
@@ -73,6 +64,8 @@ spec:
             #### Env ####
             - name: cloud.env
               value: {{ .Values.app.env }}
+            - name: gcp.project.name
+              value: {{ .Values.app.gcpProjectName }}
             - name: DEPLOY_ENV
               value: prod
             - name: aws.region
@@ -83,16 +76,21 @@ spec:
               value: {{ .Values.app.springProfilesActive | quote }}
             #### Redis ####
             - name: conductor.redis.hosts
-              value: {{ $redisHosts | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: orkesdeploymentsecrets
+                  key: redisHosts
             - name: conductor.redis.ssl
               value: {{ .Values.redis.ssl | quote }}
             - name: conductor.redis-lock.serverAddress
               value: {{ $redisLockServerAddress | quote }}
+            - name: conductor.redis.database
+              value: 1
             - name: conductor.redis-lock.serverPassword
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
-                  key: redispassword
+                  key: redisPassword
             #### Postgres ####
             - name: spring.datasource.url
               value: {{ .Values.postgres.url | quote }}
@@ -100,7 +98,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
-                  key: postgrespassword
+                  key: postgresPassword
             - name: spring.datasource.username
               value: {{ .Values.postgres.username | quote }}
             {{- if $securityEnabled }}
@@ -125,7 +123,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
-                  key: jwtsecret
+                  key: jwtSecret
             {{- if .Values.security.auth0 }}
             #### Security - Auth0 ####
             - name: conductor.security.auth0.clientId
@@ -136,7 +134,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
-                  key: clientsecret
+                  key: auth0ClientSecret
             {{- end }}
             - name: conductor.security.auth0.useIdToken
               value: {{ ne (toString .Values.security.auth0.useIdToken) "false" | quote }}
@@ -184,7 +182,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
-                  key: privatekey
+                  key: oktaSyncPrivateKey
             {{- end }}
             {{- end }}
             {{- end }}
@@ -208,6 +206,12 @@ spec:
               value: {{ .Values.app.documentStoreAzureBlobContainerName | quote }}
             - name: conductor.archive.db.document.store.type.azureblob.endpoint
               value: {{ .Values.app.documentStoreAzureBlobEndpoint | quote }}
+            {{- end }}
+            {{- if eq .Values.app.archiveStoreType "gcp" }}
+            - name: conductor.archive.db.document.store.type.gcp.bucketName
+              value: {{ .Values.app.documentStoreGcpBucketName | quote }}
+            - name: conductor.archive.db.document.store.type.gcp.location
+              value: {{ .Values.app.documentStoreGcpLocation | quote }}
             {{- end }}
             - name: conductor.archive.db.indexer.pollBatchSize
               value: {{ .Values.app.dbIndexerPollBatchSize | quote }}
