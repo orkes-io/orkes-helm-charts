@@ -64,26 +64,27 @@ workers:
 redis:
   port: 6379
   ssl: false
-  host:
-  password:
+  host: 
+  password: 
+  dbIndex: 
 
 postgres:
-  username:
-  password:
-  url:
+  username: 
+  password: 
+  url: 
 
 imageCredentials:
   registry: https://index.docker.io/v1/
   username: orkesdocker
   email: dockeracess@orkes.io
-  password:
+  password: 
 
 security:
   enabled: false
   overwriteDefault: true
   createUserOnAuthentication: false
-  defaultUserEmail:
-  defaultUserName:
+  defaultUserEmail: 
+  defaultUserName: 
   # Secret used to sign JWTs. How to generate it? openssl rand -base64 172 | tr -d '\n'
   jwt:
     secret: ""

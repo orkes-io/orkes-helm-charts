@@ -91,6 +91,9 @@
         },
         "ssl": {
           "type": "boolean"
+        },
+        "dbIndex": {
+          "type": ["integer", "null"]
         }
       }
     },
