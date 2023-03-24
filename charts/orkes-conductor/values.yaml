@@ -67,11 +67,10 @@ redis:
   host: 
   password: 
   
-
 postgres:
   username: 
   password: 
-  url: 
+  url:  
 
 imageCredentials:
   registry: https://index.docker.io/v1/
