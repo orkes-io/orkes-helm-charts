@@ -93,6 +93,8 @@ spec:
                   name: orkesdeploymentsecrets
                   key: redisPassword
             {{- end }}
+            - name: conductor.redis.database
+              value: {{ .Values.redis.dbIndex }}
             #### Postgres ####
             - name: spring.datasource.url
               value: {{ .Values.postgres.url | quote }}
