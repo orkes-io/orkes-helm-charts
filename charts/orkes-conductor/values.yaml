@@ -9,7 +9,7 @@ image:
 
 workerImage:
   repository: orkesio/orkes-conductor-workers
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 app:
   replicaCount: 3
