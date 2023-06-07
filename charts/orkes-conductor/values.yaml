@@ -27,7 +27,8 @@ app:
   schedulerPollBatchSize: "10"
   dbIndexerPollBatchSize: "30"
   sweepFrequencyMillis: "1"
-  jvmSettings: "-Xms1500M -Xmx3000M"
+  # The max memory should be at least 300M less than pod resource limit
+  jvmSettings: "-Xms1500M -Xmx2500M"
   systemTaskMaxPollCount: "20"
   workflowExecutionLockEnabled: "true"
   apiRateLimiterEnabled: "true"
@@ -36,6 +37,7 @@ app:
   # documentStoreAzureBlobContainerName, documentStoreAzureBlobEndpoint: Required if archiveStoreType = azureblob
   documentStoreAzureBlobContainerName:
   documentStoreAzureBlobEndpoint:
+  documentStoreAzureUseSASToken: "false"
   # postgres, s3, azureblob, gcp
   archiveStoreType: "postgres"
   resources:
@@ -54,7 +56,8 @@ workers:
   accessKeySecret:  # Secret (secret value)
   springProfilesActive: "logrotate"
   blockIps: "127.0.0.1"
-  jvmSettings: "-Xms750M -Xmx2000M"
+  # The max memory should be at least 300M less than pod resource limit
+  jvmSettings: "-Xms750M -Xmx1500M"
   resources:
     cpuLimit: "2"
     memoryLimit: "2Gi"
@@ -66,6 +69,7 @@ redis:
   ssl: false
   host:
   password:
+  dbIndex: 0
 
 postgres:
   username:
@@ -106,8 +110,3 @@ security:
 #    issuer:
 #    useInteractionCodeFlow:
 #    idpConf:
-#    sync:
-#      org:
-#      clientId:
-#      frequency:
-#      privateKey:
