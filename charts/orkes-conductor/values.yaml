@@ -46,6 +46,12 @@ app:
     cpuRequests: "2"
     memoryRequests: "2Gi"
 
+# Provide the name of the key vault if you are using key vault for secret management
+# Pre-requisite - the Azure SDK used by Conductor expects the host (i.e. pod/container) to be able to access this vault
+# by credentials from the environment. Typically, you would use something like Azure Workload Identity
+# Read more here: https://aka.ms/azsdk/java/identity/environmentcredential/troubleshoot
+azureKeyVaultName:
+
 secrets:
   type: memory
   ssmPath:
@@ -83,15 +89,18 @@ imageCredentials:
   password:
 
 security:
+  allowedOrigins: "*"
   enabled: false
   overwriteDefault: true
   createUserOnAuthentication: false
+# Please note that the admin user has to login first and create this group
+  defaultUserGroupsOnCreate: all_users
   defaultUserEmail:
   defaultUserName:
   # Secret used to sign JWTs. How to generate it? openssl rand -base64 172 | tr -d '\n'
   jwt:
     secret: ""
-# Create an account in Auth0, Create a SPA - get the the following info.
+# Create an account in Auth0, Create a SPA - get the following info.
 # clientSecret is only needed if useIdToken: false
 #  auth0:
 #    useIdToken: true
