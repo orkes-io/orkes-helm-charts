@@ -79,6 +79,8 @@ spec:
               value: {{ .Values.app.jvmSettings | quote }}
             - name: SPRING_PROFILES_ACTIVE
               value: {{ .Values.app.springProfilesActive | quote }}
+            - name: azure.keyvault.name
+              value: {{ .Values.azureKeyVaultName | quote }}
             #### Redis ####
             - name: conductor.redis.hosts
               valueFrom:
@@ -120,6 +122,10 @@ spec:
               value: "ADMIN"
             - name: conductor.security.default.createUserOnAuthentication
               value: {{ .Values.security.createUserOnAuthentication | quote }}
+            - name: conductor.security.allowed-origins
+              value: {{ .Values.security.allowedOrigins | quote }}
+            - name: conductor.security.default.defaultUserGroupsOnCreate
+              value: {{ .Values.security.defaultUserGroupsOnCreate | quote }}
             - name: conductor.security.default.workers.accessKeyId
               value: {{ .Values.workers.accessKeyId | quote }}
             - name: conductor.security.default.workers.accessKeySecret
