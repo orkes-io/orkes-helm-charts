@@ -1,5 +1,6 @@
 {{- $securityEnabled := eq (toString .Values.security.enabled) "true" -}}
-{{- if $securityEnabled -}}
+{{- $clusterMode := eq (toString .Values.redis.clusterMode) "true" -}}
+  {{- if $securityEnabled -}}
   {{- $validation := .Values.security.defaultUserEmail | required "security.defaultUserEmail is required." -}}
   {{- $validation := .Values.security.defaultUserName | required "security.defaultUserName is required." -}}
   {{- $validation := .Values.security.jwt.secret | required "security.jwt.secret is required." -}}
@@ -98,6 +99,12 @@ spec:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: redisPassword
+            { { - if $clusterMode } }
+            - name: conductor.db.type
+              value: redis_cluster
+            - name: conductor.queue.type
+              value: redis_cluster
+            { { - end } }
             #### Postgres ####
             - name: spring.datasource.url
               value: {{ .Values.postgres.url | quote }}
