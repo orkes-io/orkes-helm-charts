@@ -1,6 +1,6 @@
 {{- $securityEnabled := eq (toString .Values.security.enabled) "true" -}}
 {{- $clusterMode := eq (toString .Values.redis.clusterMode) "true" -}}
-  {{- if $securityEnabled -}}
+{{- if $securityEnabled -}}
   {{- $validation := .Values.security.defaultUserEmail | required "security.defaultUserEmail is required." -}}
   {{- $validation := .Values.security.defaultUserName | required "security.defaultUserName is required." -}}
   {{- $validation := .Values.security.jwt.secret | required "security.jwt.secret is required." -}}
