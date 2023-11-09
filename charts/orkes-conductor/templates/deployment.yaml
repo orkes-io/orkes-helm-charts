@@ -99,12 +99,12 @@ spec:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: redisPassword
-            { { - if $clusterMode } }
+            {{- if $clusterMode }}
             - name: conductor.db.type
               value: redis_cluster
             - name: conductor.queue.type
               value: redis_cluster
-            { { - end } }
+            {{- end }}
             #### Postgres ####
             - name: spring.datasource.url
               value: {{ .Values.postgres.url | quote }}
