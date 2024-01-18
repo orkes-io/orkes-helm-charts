@@ -106,6 +106,8 @@ spec:
               value: redis_cluster
             {{- end }}
             #### Postgres ####
+            - name: conductor.persistence.type
+              value: {{ .Values.conductor.persistence.type | quote }}
             - name: spring.datasource.url
               value: {{ .Values.postgres.url | quote }}
             - name: spring.datasource.password
