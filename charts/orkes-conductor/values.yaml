@@ -93,6 +93,11 @@ imageCredentials:
   email: dockeracess@orkes.io
   password:
 
+enableCustomTrustStore: false
+# If you are using a custom trust store, provide the following variables
+# jksFileName:
+# jksFilePassword:
+
 security:
   allowedOrigins: "*"
   enabled: false

@@ -1,5 +1,6 @@
 {{- $securityEnabled := eq (toString .Values.security.enabled) "true" -}}
 {{- $clusterMode := eq (toString .Values.redis.clusterMode) "true" -}}
+{{- $enableCustomTrustStore := eq (toString .Values.enableCustomTrustStore) "true" -}}
 {{- if $securityEnabled -}}
   {{- $validation := .Values.security.defaultUserEmail | required "security.defaultUserEmail is required." -}}
   {{- $validation := .Values.security.defaultUserName | required "security.defaultUserName is required." -}}
@@ -330,6 +331,14 @@ spec:
               value: localhost
             - name: conductor.worker.http.block.ips
               value: {{ .Values.workers.blockIps | quote }}
+            {{- if $enableCustomTrustStore }}
+            - name: conductor.worker.http.customcerts.enabled
+              value: "true"
+            - name: conductor.worker.http.customcerts.path
+              value: {{ printf "/app/certificates/%s" .Values.jksFileName | quote }}
+            - name: conductor.worker.http.customcerts.password
+              value: {{ .Values.jksFilePassword | quote }}
+            {{- end }}
             - name: conductor.server.url
               value: http://{{ include "orkes-conductor.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:5000/api/
             {{- if $securityEnabled }}
@@ -344,6 +353,12 @@ spec:
                   fieldPath: status.podIP
           image: "{{ .Values.workerImage.repository }}:{{ .Values.workerImage.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if $enableCustomTrustStore }}
+          volumeMounts:
+            - name: custom-truststore-vol
+              mountPath: {{ printf "/app/certificates/%s" .Values.jksFileName | quote }}
+              subPath: {{ .Values.jksFileName | quote }}
+          {{- end }}
           name: {{ include "orkes-conductor-workers.fullname" . }}-workers
           resources:
             limits:
@@ -355,6 +370,15 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
       dnsPolicy: ClusterFirst
+      {{- if $enableCustomTrustStore }}
+      volumes:
+        - name: custom-truststore-vol
+          configMap:
+            name: "custom-truststore-cm"
+            items:
+              - key: {{ .Values.jksFileName | quote }}
+                path: {{ .Values.jksFileName | quote }}
+      {{- end }}
       imagePullSecrets:
         - name: orkesregistry
       restartPolicy: Always
