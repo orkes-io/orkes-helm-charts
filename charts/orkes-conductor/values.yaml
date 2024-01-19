@@ -95,8 +95,8 @@ imageCredentials:
 
 enableCustomTrustStore: false
 # If you are using a custom trust store, provide the following variables
-#jksFileName:
-#jksFilePassword:
+# jksFileName:
+# jksFilePassword:
 
 security:
   allowedOrigins: "*"
