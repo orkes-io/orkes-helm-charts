@@ -4,5 +4,5 @@ description: Orkes Conductor Standalone (recommended only for testing and develo
 
 type: application
 
-version: 2.6.55
-appVersion: "3.3.17"
+version: 2.6.56
+appVersion: "3.3.20"
