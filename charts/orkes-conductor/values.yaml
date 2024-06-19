@@ -35,7 +35,6 @@ app:
   maxTaskSizeInKiB: "200"
   maxTaskInWorkflowExecution: "1000"
   maxTaskInWorkflowDefinition: "1000"
-
   apiRateLimiterEnabled: "true"
   # documentStoreS3BucketName: Required if archiveStoreType = s3
   documentStoreS3BucketName:
