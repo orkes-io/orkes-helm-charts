@@ -251,14 +251,14 @@ spec:
               value: {{ .Values.secrets.ssmPath | quote }}
             {{- end }}
             #### Limits ####
-            - name: conductor.app.maxWorkflowSizeInMiB
-              value: {{ .Values.app.maxWorkflowSizeInMiB | quote }}
-            - name: conductor.app.maxTaskSizeInKiB
-              value: {{ .Values.app.maxTaskSizeInKiB | quote }}
-            - name: conductor.app.maxTaskInWorkflowExecution
-              value: {{ .Values.app.maxTaskInWorkflowExecution | quote }}
-            - name: conductor.app.maxTaskInWorkflowDefinition
-              value: {{ .Values.app.maxTaskInWorkflowDefinition | quote }}
+            - name: conductor.limits.maxWorkflowSizeInMiB
+              value: {{ .Values.app.limits.maxWorkflowSizeInMiB | quote }}
+            - name: conductor.limits.maxTaskSizeInKiB
+              value: {{ .Values.app.limits.maxTaskSizeInKiB | quote }}
+            - name: conductor.limits.maxTaskInWorkflowExecution
+              value: {{ .Values.app.limits.maxTaskInWorkflowExecution | quote }}
+            - name: conductor.limits.maxTaskInWorkflowDefinition
+              value: {{ .Values.app.limits.maxTaskInWorkflowDefinition | quote }}
             #### Others ####
             - name: conductor.swagger.url
               value: {{ .Values.app.swaggerUrl | quote }}
