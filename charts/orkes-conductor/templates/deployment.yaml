@@ -267,7 +267,7 @@ spec:
             - name: conductor.app.systemTaskMaxPollCount
               value: {{ .Values.app.systemTaskMaxPollCount | quote }}
             - name: conductor.limits.maxScheduleConfigs
-              value: { { .Values.app.maxScheduleConfigs | quote } }
+              value: {{ .Values.app.maxScheduleConfigs | quote }}
             - name: conductor.app.workflow-execution-lock-enabled
               value: {{ .Values.app.workflowExecutionLockEnabled | quote }}
             - name: conductor.api.ratelimiter.enabled
