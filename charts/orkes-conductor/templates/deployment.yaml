@@ -118,6 +118,10 @@ spec:
                   key: postgresPassword
             - name: spring.datasource.username
               value: {{ .Values.postgres.username | quote }}
+            {{- if .Values.app.customLogoUrl }}
+            - name: conductor.ui.custom.logo
+              value: {{ .Values.app.customLogoUrl | quote }}
+            {{- end }}
             {{- if $securityEnabled }}
             #### Security ####
             - name: conductor.security.enabled
@@ -160,10 +164,6 @@ spec:
               value: {{ ne (toString .Values.security.auth0.useIdToken) "false" | quote }}
             - name: conductor.security.auth0.domain
               value: {{ .Values.security.auth0.domain | quote }}
-            {{- end }}
-            {{- if .Values.app.customLogoUrl }}
-            - name: conductor.ui.custom.logo
-              value: {{ .Values.app.customLogoUrl | quote }}
             {{- end }}
             {{- if .Values.security.oidc }}
             #### Security - OIDC ####
