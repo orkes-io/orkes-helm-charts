@@ -161,10 +161,10 @@ spec:
             - name: conductor.security.auth0.domain
               value: {{ .Values.security.auth0.domain | quote }}
             {{- end }}
-            { { - if .Values.app.customLogoUrl - } }
+            {{ - if .Values.app.customLogoUrl - }}
             - name: conductor.ui.custom.logo
-              value: { { .Values.app.customLogoUrl | quote } }
-            { { - end - } }
+              value: {{ .Values.app.customLogoUrl | quote }}
+            {{ - end - }}
             {{- if .Values.security.oidc }}
             #### Security - OIDC ####
             - name: conductor.security.oidc.clientId
