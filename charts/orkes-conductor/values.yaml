@@ -43,6 +43,7 @@ app:
   documentStoreAzureBlobContainerName:
   documentStoreAzureBlobEndpoint:
   documentStoreAzureUseSASToken: "false"
+  customLogoUrl:
   # postgres, s3, azureblob, gcp
   archiveStoreType: "postgres"
   resources:
