@@ -274,6 +274,8 @@ spec:
               value: {{ .Values.app.workflowExecutionLockEnabled | quote }}
             - name: conductor.api.ratelimiter.enabled
               value: {{ .Values.app.apiRateLimiterEnabled | quote }}
+            - name: conductor.human-task.enabled
+              value: {{ .Values.app.humanTasksEnabled | default "false" | quote }}
             - name: LOCAL_HOST_IP
               valueFrom:
                 fieldRef:

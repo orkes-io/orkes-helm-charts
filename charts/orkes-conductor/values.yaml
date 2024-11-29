@@ -37,6 +37,7 @@ app:
     maxTaskInWorkflowExecution: "1000"
     maxTaskInWorkflowDefinition: "1000"
   apiRateLimiterEnabled: "true"
+  humanTasksEnabled: "false"
   # documentStoreS3BucketName: Required if archiveStoreType = s3
   documentStoreS3BucketName:
   # documentStoreAzureBlobContainerName, documentStoreAzureBlobEndpoint: Required if archiveStoreType = azureblob
