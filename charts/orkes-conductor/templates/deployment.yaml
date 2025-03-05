@@ -80,7 +80,7 @@ spec:
             - name: JVM_MEMORY_SETTINGS
               value: {{ .Values.app.jvmSettings | quote }}
             - name: SPRING_PROFILES_ACTIVE
-              value: {{ .Values.app.springProfilesActive | quote }}
+              value: {{ printf "%s%s" (ternary "security," "" $securityEnabled) .Values.app.springProfilesActive | quote }}
             - name: azure.keyvault.name
               value: {{ .Values.azureKeyVaultName | quote }}
             #### Redis ####
@@ -341,7 +341,7 @@ spec:
             - name: JVM_MEMORY_SETTINGS
               value: {{ .Values.workers.jvmSettings | quote }}
             - name: SPRING_PROFILES_ACTIVE
-              value: {{ .Values.workers.springProfilesActive | quote }}
+              value: {{ printf "%s%s" (ternary "security," "" $securityEnabled) .Values.workers.springProfilesActive | quote }}
             - name: conductor.worker.http.block.hosts
               value: localhost
             - name: conductor.worker.http.block.ips
