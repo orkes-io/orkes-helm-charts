@@ -144,6 +144,10 @@ spec:
               value: {{ .Values.workers.accessKeyId | quote }}
             - name: conductor.security.default.workers.accessKeySecret
               value: {{ .Values.workers.accessKeySecret | quote }}
+            {{- if .Values.security.jwtExpiry }}
+            - name: conductor.security.jwt.exp
+              value: {{ .Values.security.jwtExpiry | quote }}
+            {{- end }}
             - name: conductor.security.jwt.secret
               valueFrom:
                 secretKeyRef:
@@ -361,6 +365,10 @@ spec:
               value: {{ .Values.workers.accessKeyId | quote }}
             - name: conductor.security.client.secret
               value: {{ .Values.workers.accessKeySecret | quote }}
+            {{- if .Values.security.jwtExpiry }}
+            - name: conductor.security.token.refresh.interval
+              value: {{ .Values.security.jwtExpiry | quote }}
+            {{- end }}
             {{- end }}
             - name: LOCAL_HOST_IP
               valueFrom:
