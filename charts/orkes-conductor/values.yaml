@@ -110,6 +110,7 @@ security:
   enabled: false
   overwriteDefault: true
   createUserOnAuthentication: false
+  jwtExpiry: 3600
 # Please note that the admin user has to login first and create this group
   defaultUserGroupsOnCreate: all_users
   defaultUserEmail:
