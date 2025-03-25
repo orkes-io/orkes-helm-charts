@@ -342,6 +342,8 @@ spec:
         - env:
             - name: DEPLOY_ENV
               value: prod
+            - name: aws.region
+              value: {{ .Values.app.s3Region | quote }}
             - name: JVM_MEMORY_SETTINGS
               value: {{ .Values.workers.jvmSettings | quote }}
             - name: SPRING_PROFILES_ACTIVE
