@@ -8,8 +8,6 @@
     "app",
     "secrets",
     "workers",
-    "redis",
-    "postgres",
     "imageCredentials",
     "security"
   ],
@@ -77,10 +75,6 @@
     },
     "redis": {
       "type": "object",
-      "required": [
-        "host",
-        "port"
-      ],
       "properties": {
         "host": {
           "type": "string"
@@ -95,11 +89,6 @@
     },
     "postgres": {
       "type": "object",
-      "required": [
-        "username",
-        "password",
-        "url"
-      ],
       "properties": {
         "username": {
           "type": "string"

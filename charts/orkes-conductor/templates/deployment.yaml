@@ -84,26 +84,22 @@ spec:
             - name: azure.keyvault.name
               value: {{ .Values.azureKeyVaultName | quote }}
             #### Redis ####
-            {{- if .Values.useOrkesDeploymentSecrets}}
             - name: conductor.redis.hosts
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: redisHosts
-            {{- end }}
             - name: conductor.redis.ssl
               value: {{ .Values.redis.ssl | quote }}
             - name: conductor.redis-lock.serverAddress
               value: {{ $redisLockServerAddress | quote }}
             - name: conductor.redis.database
               value: {{ .Values.redis.dbIndex | quote }}
-            {{- if .Values.useOrkesDeploymentSecrets}}
             - name: conductor.redis-lock.serverPassword
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: redisPassword
-            {{- end}}
             {{- if $clusterMode }}
             - name: conductor.db.type
               value: redis_cluster
@@ -115,13 +111,11 @@ spec:
               value: {{ .Values.conductor.persistence.type | quote }}
             - name: spring.datasource.url
               value: {{ .Values.postgres.url | quote }}
-            {{- if .Values.useOrkesDeploymentSecrets}}
             - name: spring.datasource.password
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: postgresPassword
-            {{- end }}
             - name: spring.datasource.username
               value: {{ .Values.postgres.username | quote }}
             {{- if .Values.app.customLogoUrl }}
@@ -154,24 +148,20 @@ spec:
             - name: conductor.security.jwt.exp
               value: {{ .Values.security.jwtExpiry | quote }}
             {{- end }}
-            {{- if .Values.useOrkesDeploymentSecrets }}
             - name: conductor.security.jwt.secret
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: securityJwtSecret
-            {{- end }}
             {{- if .Values.security.auth0 }}
             #### Security - Auth0 ####
             - name: conductor.security.auth0.clientId
               value: {{ .Values.security.auth0.clientId | quote }}
-            {{- if .Values.security.auth0.clientSecret and .Values.useOrkesDeploymentSecrets }}
             - name: conductor.security.auth0.clientSecret
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: auth0ClientSecret
-            {{- end }}
             - name: conductor.security.auth0.useIdToken
               value: {{ ne (toString .Values.security.auth0.useIdToken) "false" | quote }}
             - name: conductor.security.auth0.domain
