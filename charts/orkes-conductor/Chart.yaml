@@ -4,5 +4,5 @@ description: Orkes Conductor
 
 type: application
 
-version: 2.7.12
-appVersion: "4.1.43"
+version: 2.7.14
+appVersion: "5.0.1"
