@@ -100,6 +100,9 @@ imageCredentials:
   email: dockeracess@orkes.io
   password:
 
+# Set this to false if you will be setting environment variables in other ways
+useOrkesDeploymentSecrets: true
+
 enableCustomTrustStore: false
 # If you are using a custom trust store, provide the following variables
 # jksFileName:
@@ -137,3 +140,4 @@ security:
 #    issuer:
 #    useInteractionCodeFlow:
 #    idpConf:
+extraObjects: []

@@ -163,7 +163,7 @@ spec:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: auth0ClientSecret
-            {{- end }}
+              {{- end }}
             - name: conductor.security.auth0.useIdToken
               value: {{ ne (toString .Values.security.auth0.useIdToken) "false" | quote }}
             - name: conductor.security.auth0.domain
