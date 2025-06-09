@@ -47,6 +47,9 @@ app:
   customLogoUrl:
   # postgres, s3, azureblob, gcp
   archiveStoreType: "postgres"
+  # API orchestration is disabled by default. This encompasses gRPC and REST service registries, resiliency patterns, and synchronous workflow execution.
+  apiOrchestrationEnabled: "false"
+  grpcServerEnabled: "false"
   resources:
     cpuLimit: "3"
     memoryLimit: "3Gi"

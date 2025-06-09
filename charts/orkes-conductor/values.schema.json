@@ -39,6 +39,20 @@
             "s3"
           ]
         },
+        "apiOrchestrationEnabled": {
+          "type": "string",
+          "enum": [
+            "true",
+            "false"
+          ]
+        },
+        "grpcServerEnabled": {
+          "type": "string",
+          "enum": [
+            "true",
+            "false"
+          ]
+        },
         "secretsType": {
           "type": "string",
           "enum": [
