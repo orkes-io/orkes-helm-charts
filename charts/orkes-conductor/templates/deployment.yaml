@@ -267,6 +267,12 @@ spec:
               value: {{ .Values.app.limits.maxTaskInWorkflowExecution | quote }}
             - name: conductor.limits.maxTaskInWorkflowDefinition
               value: {{ .Values.app.limits.maxTaskInWorkflowDefinition | quote }}
+            #### API Orchestration ####
+            - name: conductor.api.orchestration.enabled
+              value: {{ .Values.app.apiOrchestrationEnabled | quote }}
+            #### gRPC Server for Conductor's own APIs ####
+            - name: conductor.grpc.enabled
+              value: {{ .Values.app.grpcServerEnabled | quote }}
             #### Others ####
             - name: conductor.swagger.url
               value: {{ .Values.app.swaggerUrl | quote }}
