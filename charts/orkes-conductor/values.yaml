@@ -1,6 +1,7 @@
 service:
   port: 5000
   appPort: 8080
+  grpcPort: 8090
 
 image:
   repository: orkesio/orkes-conductor-server
