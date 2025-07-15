@@ -97,6 +97,9 @@ postgres:
 conductor:
   persistence:
     type: postgres
+  workflow:
+    execution:
+      maxParallelSystemTasks: 1024
 
 imageCredentials:
   registry: https://index.docker.io/v1/
