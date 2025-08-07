@@ -68,6 +68,8 @@ secrets:
   ssmPath:
 
 workers:
+  env:
+    ORKES_CLUSTER_NAME: "orkes-conductor"
   replicaCount: 2
   accessKeyId:  #  Key ID (random value)
   accessKeySecret:  # Secret (secret value)
@@ -95,6 +97,8 @@ postgres:
   url:
 
 conductor:
+  env:
+
   persistence:
     type: postgres
   workflow:
