@@ -97,8 +97,7 @@ postgres:
   url:
 
 conductor:
-  env:
-
+  env: {}
   persistence:
     type: postgres
   workflow:
