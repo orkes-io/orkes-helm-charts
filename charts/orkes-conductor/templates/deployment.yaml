@@ -290,9 +290,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            {{- if .Values.conductor.env }}
             {{- range $key, $value := .Values.conductor.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
+            {{- end }}
             {{- end }}
           name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -386,9 +388,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-            {{- range $key, $value := .Values.workers.env }}
-              - name: {{ $key }}
-                value: {{ $value | quote }}
+            {{- if .Values.workers.env }}
+            {{- range $key, $value := .Values.conductor.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
             {{- end }}
           image: "{{ .Values.workerImage.repository }}:{{ .Values.workerImage.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
