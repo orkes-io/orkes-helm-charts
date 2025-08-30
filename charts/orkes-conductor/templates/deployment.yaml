@@ -33,7 +33,8 @@
   {{- $validation := .Values.app.documentStoreAzureBlobEndpoint | required "app.documentStoreAzureBlobEndpoint is required." -}}
   {{- $validation := .Values.app.documentStoreAzureUseSASToken | required "app.documentStoreAzureUseSASToken is required." -}}
 {{- end -}}
-{{- $redisHosts := printf "%v:%v:%v" .Values.redis.host .Values.redis.port "us-east-1c" -}}
+{{- $redisZone := .Values.redis.zoneSuffix | default "us-east-1c" -}}
+{{- $redisHosts := printf "%v:%v:%v" .Values.redis.host .Values.redis.port $redisZone -}}
 {{- if .Values.redis.password -}}
   {{- $redisHosts = printf "%v:%v" $redisHosts .Values.redis.password -}}
 {{- end -}}
