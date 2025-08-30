@@ -57,6 +57,7 @@
           "type": "string",
           "enum": [
             "azkv",
+            "gcp",
             "memory",
             "ssm"
           ]
@@ -70,6 +71,7 @@
           "type": "string",
           "enum": [
             "azkv",
+            "gcp",
             "memory",
             "ssm"
           ]

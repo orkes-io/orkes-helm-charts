@@ -96,6 +96,7 @@ redis:
   password:
   dbIndex: 0
   clusterMode: false
+  zoneSuffix: us-east-1c
 
 postgres:
   username:

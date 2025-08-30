@@ -80,7 +80,7 @@ spec:
             - name: JVM_MEMORY_SETTINGS
               value: {{ .Values.app.jvmSettings | quote }}
             - name: SPRING_PROFILES_ACTIVE
-              value: {{ printf "%s%s" (ternary "security," "" $securityEnabled) .Values.app.springProfilesActive | quote }}
+              value: {{ .Values.app.springProfilesActive | quote }}
             - name: azure.keyvault.name
               value: {{ .Values.azureKeyVaultName | quote }}
             #### Redis ####
@@ -89,17 +89,26 @@ spec:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: redisHosts
+            - name: conductor.redis.zone
+              value: {{ .Values.redis.zoneSuffix | default "us-east-1c" | quote }}
             - name: conductor.redis.ssl
               value: {{ .Values.redis.ssl | quote }}
             - name: conductor.redis-lock.serverAddress
               value: {{ $redisLockServerAddress | quote }}
             - name: conductor.redis.database
               value: {{ .Values.redis.dbIndex | quote }}
+            {{- if .Values.redis.password }}
+            - name: conductor.redis.password
+              valueFrom:
+                secretKeyRef:
+                  name: orkesdeploymentsecrets
+                  key: redisPassword
             - name: conductor.redis-lock.serverPassword
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: redisPassword
+            {{- end }}
             {{- if $clusterMode }}
             - name: conductor.db.type
               value: redis_cluster
@@ -304,7 +313,7 @@ spec:
                   fieldPath: status.podIP
             {{- if .Values.conductor.env }}
             {{- range $key, $value := .Values.conductor.env }}
-            - name: {{ $key }}
+            - name: {{ $key | replace "." "__DOT__" | replace "[" "__LB__" | replace "]" "__RB__" }}
               value: {{ $value | quote }}
             {{- end }}
             {{- end }}
@@ -371,7 +380,7 @@ spec:
             - name: JVM_MEMORY_SETTINGS
               value: {{ .Values.workers.jvmSettings | quote }}
             - name: SPRING_PROFILES_ACTIVE
-              value: {{ printf "%s%s" (ternary "security," "" $securityEnabled) .Values.workers.springProfilesActive | quote }}
+              value: {{ .Values.workers.springProfilesActive | quote }}
             - name: conductor.worker.http.block.hosts
               value: localhost
             - name: conductor.worker.http.block.ips
@@ -384,8 +393,11 @@ spec:
             - name: conductor.worker.http.customcerts.password
               value: {{ .Values.jksFilePassword | quote }}
             {{- end }}
+            {{- $overrideServerUrl := and .Values.workers.env (hasKey .Values.workers.env "conductor.server.url") -}}
+            {{- if not $overrideServerUrl }}
             - name: conductor.server.url
               value: http://{{ include "orkes-conductor.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:5000/api/
+            {{- end }}
             {{- if $securityEnabled }}
             - name: conductor.security.client.key-id
               value: {{ .Values.workers.accessKeyId | quote }}
@@ -402,6 +414,10 @@ spec:
                   fieldPath: status.podIP
             {{- if .Values.workers.env }}
             {{- range $key, $value := .Values.workers.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- range $key, $value := .Values.conductor.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
