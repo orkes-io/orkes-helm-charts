@@ -75,6 +75,9 @@
             "memory",
             "ssm"
           ]
+        },
+        "gsmPath": {
+          "type": "string"
         }
       }
     },

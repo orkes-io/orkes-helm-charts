@@ -72,6 +72,7 @@ azureKeyVaultName:
 secrets:
   type: memory
   ssmPath:
+  gsmPath:
 
 workers:
   env:
