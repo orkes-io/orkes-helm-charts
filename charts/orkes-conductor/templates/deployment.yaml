@@ -430,6 +430,9 @@ spec:
             - name: conductor.server.url
               value: http://{{ include "orkes-conductor.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:5000/api/
             {{- end }}
+            # Ensure workers can resolve GSM/SSM placeholders like ${gsm:...}
+            - name: conductor.secrets.type
+              value: {{ $secretsType | quote }}
             {{- if $securityEnabled }}
             - name: conductor.security.client.key-id
               value: {{ .Values.workers.accessKeyId | quote }}
@@ -444,12 +447,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-            {{- if .Values.conductor.env }}
-            {{- range $key, $value := .Values.conductor.env }}
-            - name: {{ $key }}
-              value: {{ $value | quote }}
-            {{- end }}
-            {{- end }}
             {{- if .Values.workers.env }}
             {{- range $key, $value := .Values.workers.env }}
             - name: {{ $key }}
