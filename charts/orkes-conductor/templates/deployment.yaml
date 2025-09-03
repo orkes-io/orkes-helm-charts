@@ -345,7 +345,7 @@ spec:
                   fieldPath: status.podIP
             {{- if .Values.conductor.env }}
             {{- range $key, $value := .Values.conductor.env }}
-            - name: {{ $key | replace "." "__DOT__" | replace "[" "__LB__" | replace "]" "__RB__" }}
+            - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
             {{- end }}
@@ -444,12 +444,14 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-            {{- if .Values.workers.env }}
-            {{- range $key, $value := .Values.workers.env }}
+            {{- if .Values.conductor.env }}
+            {{- range $key, $value := .Values.conductor.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
-            {{- range $key, $value := .Values.conductor.env }}
+            {{- end }}
+            {{- if .Values.workers.env }}
+            {{- range $key, $value := .Values.workers.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
