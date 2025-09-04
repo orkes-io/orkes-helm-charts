@@ -389,7 +389,7 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             {{- if .Values.workers.env }}
-            {{- range $key, $value := .Values.conductor.env }}
+            {{- range $key, $value := .Values.workers.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
