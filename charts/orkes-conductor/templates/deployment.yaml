@@ -278,6 +278,14 @@ spec:
             - name: conductor.grpc.enabled
               value: {{ .Values.app.grpcServerEnabled | quote }}
             #### Others ####
+            - name: conductor.postgres.workflowDefCacheRefreshInterval
+              value: {{ .Values.app.workflowDefinitionCache.refreshIntervalInSeconds | quote }}
+            - name: conductor.postgres.workflowDefCacheMaxSize
+              value: {{ .Values.app.workflowDefinitionCache.maxSize | quote }}
+            - name: conductor.postgres.taskDefCacheRefreshInterval
+              value: {{ .Values.app.taskDefinitionCache.refreshIntervalInSeconds | quote }}
+            - name: conductor.postgres.taskDefCacheMaxSize
+              value: {{ .Values.app.taskDefinitionCache.maxSize | quote }}
             - name: conductor.swagger.url
               value: {{ .Values.app.swaggerUrl | quote }}
             - name: conductor.app.lockTimeToTry
