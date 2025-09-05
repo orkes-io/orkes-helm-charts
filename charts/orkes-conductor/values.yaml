@@ -57,10 +57,10 @@ app:
     cpuRequests: "2"
     memoryRequests: "2Gi"
   workflowDefinitionCache:
-    refreshIntervalInSeconds: 0 # 0 means disabled
+    refreshIntervalInSeconds: 0  # 0 means disabled
     maxSize: 1000
   taskDefinitionCache:
-    refreshIntervalInSeconds: 60 # Task definitions are cached by default
+    refreshIntervalInSeconds: 60  # Task definitions are cached by default
     maxSize: 1000
 
 # Provide the name of the key vault if you are using key vault for secret management
