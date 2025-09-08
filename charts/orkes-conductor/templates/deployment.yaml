@@ -82,8 +82,10 @@ spec:
               value: {{ .Values.app.jvmSettings | quote }}
             - name: SPRING_PROFILES_ACTIVE
               value: {{ .Values.app.springProfilesActive | quote }}
+            {{- if .Values.azureKeyVaultName }}
             - name: azure.keyvault.name
               value: {{ .Values.azureKeyVaultName | quote }}
+            {{- end }}
             #### Redis ####
             {{- if eq $secretsType "gcp" }}
             - name: conductor.redis.hosts
