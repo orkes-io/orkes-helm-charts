@@ -4,6 +4,10 @@ metadata:
   name: {{ include "orkes-conductor.fullname" . }}
   labels:
     {{- include "orkes-conductor.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -21,6 +25,10 @@ metadata:
   labels:
     serviceName: {{ include "orkes-conductor.fullname" . }}-app
     {{- include "orkes-conductor.labels" . | nindent 4 }}-app
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   type: {{ .Values.service.type }}
   ports:

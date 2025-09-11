@@ -71,7 +71,11 @@ azureKeyVaultName:
 
 secrets:
   type: memory
-  ssmPath:
+  ssmPath: ""
+  gsmPath: ""
+
+serviceAccount:
+  annotations: {}
 
 workers:
   env:
@@ -92,15 +96,16 @@ workers:
 redis:
   port: 6379
   ssl: false
-  host:
-  password:
+  host: ""
+  password: ""
   dbIndex: 0
   clusterMode: false
+  zoneSuffix: us-east-1c
 
 postgres:
-  username:
-  password:
-  url:
+  username: ""
+  password: ""
+  url: ""
 
 conductor:
   env: {}
@@ -114,7 +119,7 @@ imageCredentials:
   registry: https://index.docker.io/v1/
   username: orkesdocker
   email: dockeracess@orkes.io
-  password:
+  password: ""
 
 # Set this to false if you will be setting environment variables in other ways
 useOrkesDeploymentSecrets: true
@@ -132,8 +137,8 @@ security:
   jwtExpiry: 3600
 # Please note that the admin user has to login first and create this group
   defaultUserGroupsOnCreate: all_users
-  defaultUserEmail:
-  defaultUserName:
+  defaultUserEmail: ""
+  defaultUserName: ""
   # Secret used to sign JWTs. How to generate it? openssl rand -base64 172 | tr -d '\n'
   jwt:
     secret: ""
