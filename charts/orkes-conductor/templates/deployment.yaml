@@ -46,6 +46,7 @@
 {{- $appReplicaCount := .Values.app.replicaCount | default .Values.replicaCount -}}
 {{- $validation := $appReplicaCount | required "replicaCount (deprecated) or app.replicaCount is required." -}}
 {{- $secretsType := .Values.secrets.type | default .Values.app.secretsType -}}
+{{- $useCloudSecrets := or (eq $secretsType "gcp") (or (eq $secretsType "ssm") (eq $secretsType "azkv")) -}}
 {{- $validation := $secretsType | required "app.secretsType (deprecated) or secrets.type is required." -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -87,7 +88,7 @@ spec:
               value: {{ .Values.azureKeyVaultName | quote }}
             {{- end }}
             #### Redis ####
-            {{- if eq $secretsType "gcp" }}
+            {{- if $useCloudSecrets }}
             - name: conductor.redis.hosts
               value: {{ $redisHosts | quote }}
             {{- else }}
@@ -97,8 +98,6 @@ spec:
                   name: orkesdeploymentsecrets
                   key: redisHosts
             {{- end }}
-            - name: conductor.redis.zone
-              value: {{ .Values.redis.zoneSuffix | default "us-east-1c" | quote }}
             - name: conductor.redis.ssl
               value: {{ .Values.redis.ssl | quote }}
             - name: conductor.redis-lock.serverAddress
@@ -106,7 +105,7 @@ spec:
             - name: conductor.redis.database
               value: {{ .Values.redis.dbIndex | quote }}
             {{- if .Values.redis.password }}
-            {{- if eq $secretsType "gcp" }}
+            {{- if $useCloudSecrets }}
             - name: conductor.redis.password
               value: {{ .Values.redis.password | quote }}
             - name: conductor.redis-lock.serverPassword
@@ -139,7 +138,7 @@ spec:
               value: {{ .Values.conductor.persistence.type | quote }}
             - name: spring.datasource.url
               value: {{ .Values.postgres.url | quote }}
-            {{- if eq $secretsType "gcp" }}
+            {{- if $useCloudSecrets }}
             - name: spring.datasource.password
               value: {{ .Values.postgres.password | quote }}
             {{- else }}
@@ -181,7 +180,7 @@ spec:
             - name: conductor.security.jwt.exp
               value: {{ .Values.security.jwtExpiry | quote }}
             {{- end }}
-            {{- if eq $secretsType "gcp" }}
+            {{- if $useCloudSecrets }}
             - name: conductor.security.jwt.secret
               value: {{ .Values.security.jwt.secret | quote }}
             {{- else }}
@@ -196,7 +195,7 @@ spec:
             - name: conductor.security.auth0.clientId
               value: {{ .Values.security.auth0.clientId | quote }}
             {{- if .Values.security.auth0.clientSecret }}
-            {{- if eq $secretsType "gcp" }}
+            {{- if $useCloudSecrets }}
             - name: conductor.security.auth0.clientSecret
               value: {{ .Values.security.auth0.clientSecret | quote }}
             {{- else }}

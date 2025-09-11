@@ -76,9 +76,14 @@
             "ssm"
           ]
         },
-        "gsmPath": {
-          "type": "string"
-        }
+        "ssmPath": { "type": "string" },
+        "gsmPath": { "type": "string" }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "annotations": { "type": "object" }
       }
     },
     "workers": {

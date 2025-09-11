@@ -71,8 +71,11 @@ azureKeyVaultName:
 
 secrets:
   type: memory
-  ssmPath:
-  gsmPath:
+  ssmPath: ""
+  gsmPath: ""
+
+serviceAccount:
+  annotations: {}
 
 workers:
   env:
