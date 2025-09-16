@@ -6,6 +6,10 @@ metadata:
   labels:
     serviceName: {{ include "orkes-conductor.fullname" . }}-grpc
     {{- include "orkes-conductor.labels" . | nindent 4 }}-grpc
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   type: {{ .Values.service.type }}
   ports:

@@ -33,7 +33,8 @@
   {{- $validation := .Values.app.documentStoreAzureBlobEndpoint | required "app.documentStoreAzureBlobEndpoint is required." -}}
   {{- $validation := .Values.app.documentStoreAzureUseSASToken | required "app.documentStoreAzureUseSASToken is required." -}}
 {{- end -}}
-{{- $redisHosts := printf "%v:%v:%v" .Values.redis.host .Values.redis.port "us-east-1c" -}}
+{{- $redisZone := .Values.redis.zoneSuffix | default "us-east-1c" -}}
+{{- $redisHosts := printf "%v:%v:%v" .Values.redis.host .Values.redis.port $redisZone -}}
 {{- if .Values.redis.password -}}
   {{- $redisHosts = printf "%v:%v" $redisHosts .Values.redis.password -}}
 {{- end -}}
@@ -45,6 +46,7 @@
 {{- $appReplicaCount := .Values.app.replicaCount | default .Values.replicaCount -}}
 {{- $validation := $appReplicaCount | required "replicaCount (deprecated) or app.replicaCount is required." -}}
 {{- $secretsType := .Values.secrets.type | default .Values.app.secretsType -}}
+{{- $useCloudSecrets := or (eq $secretsType "gcp") (or (eq $secretsType "ssm") (eq $secretsType "azkv")) -}}
 {{- $validation := $secretsType | required "app.secretsType (deprecated) or secrets.type is required." -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -81,25 +83,46 @@ spec:
               value: {{ .Values.app.jvmSettings | quote }}
             - name: SPRING_PROFILES_ACTIVE
               value: {{ printf "%s%s" (ternary "security," "" $securityEnabled) .Values.app.springProfilesActive | quote }}
+            {{- if .Values.azureKeyVaultName }}
             - name: azure.keyvault.name
               value: {{ .Values.azureKeyVaultName | quote }}
+            {{- end }}
             #### Redis ####
+            {{- if $useCloudSecrets }}
+            - name: conductor.redis.hosts
+              value: {{ $redisHosts | quote }}
+            {{- else }}
             - name: conductor.redis.hosts
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: redisHosts
+            {{- end }}
             - name: conductor.redis.ssl
               value: {{ .Values.redis.ssl | quote }}
             - name: conductor.redis-lock.serverAddress
               value: {{ $redisLockServerAddress | quote }}
             - name: conductor.redis.database
               value: {{ .Values.redis.dbIndex | quote }}
+            {{- if .Values.redis.password }}
+            {{- if $useCloudSecrets }}
+            - name: conductor.redis.password
+              value: {{ .Values.redis.password | quote }}
+            - name: conductor.redis-lock.serverPassword
+              value: {{ .Values.redis.password | quote }}
+            {{- else }}
+            - name: conductor.redis.password
+              valueFrom:
+                secretKeyRef:
+                  name: orkesdeploymentsecrets
+                  key: redisPassword
             - name: conductor.redis-lock.serverPassword
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: redisPassword
+            {{- end }}
+            {{- end }}
             {{- if $clusterMode }}
             - name: conductor.db.type
               value: redis_cluster
@@ -115,11 +138,16 @@ spec:
               value: {{ .Values.conductor.persistence.type | quote }}
             - name: spring.datasource.url
               value: {{ .Values.postgres.url | quote }}
+            {{- if $useCloudSecrets }}
+            - name: spring.datasource.password
+              value: {{ .Values.postgres.password | quote }}
+            {{- else }}
             - name: spring.datasource.password
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: postgresPassword
+            {{- end }}
             - name: spring.datasource.username
               value: {{ .Values.postgres.username | quote }}
             {{- if .Values.app.customLogoUrl }}
@@ -152,22 +180,32 @@ spec:
             - name: conductor.security.jwt.exp
               value: {{ .Values.security.jwtExpiry | quote }}
             {{- end }}
+            {{- if $useCloudSecrets }}
+            - name: conductor.security.jwt.secret
+              value: {{ .Values.security.jwt.secret | quote }}
+            {{- else }}
             - name: conductor.security.jwt.secret
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: securityJwtSecret
+            {{- end }}
             {{- if .Values.security.auth0 }}
             #### Security - Auth0 ####
             - name: conductor.security.auth0.clientId
               value: {{ .Values.security.auth0.clientId | quote }}
             {{- if .Values.security.auth0.clientSecret }}
+            {{- if $useCloudSecrets }}
+            - name: conductor.security.auth0.clientSecret
+              value: {{ .Values.security.auth0.clientSecret | quote }}
+            {{- else }}
             - name: conductor.security.auth0.clientSecret
               valueFrom:
                 secretKeyRef:
                   name: orkesdeploymentsecrets
                   key: auth0ClientSecret
-              {{- end }}
+            {{- end }}
+            {{- end }}
             - name: conductor.security.auth0.useIdToken
               value: {{ ne (toString .Values.security.auth0.useIdToken) "false" | quote }}
             - name: conductor.security.auth0.domain
@@ -261,6 +299,10 @@ spec:
             {{- if .Values.secrets.ssmPath }}
             - name: conductor.secrets.ssm.path
               value: {{ .Values.secrets.ssmPath | quote }}
+            {{- end }}
+            {{- if .Values.secrets.gsmPath }}
+            - name: conductor.secrets.gsm.path
+              value: {{ .Values.secrets.gsmPath | quote }}
             {{- end }}
             #### Limits ####
             - name: conductor.limits.maxWorkflowSizeInMiB
@@ -384,8 +426,14 @@ spec:
             - name: conductor.worker.http.customcerts.password
               value: {{ .Values.jksFilePassword | quote }}
             {{- end }}
+            {{- $overrideServerUrl := and .Values.workers.env (hasKey .Values.workers.env "conductor.server.url") -}}
+            {{- if not $overrideServerUrl }}
             - name: conductor.server.url
               value: http://{{ include "orkes-conductor.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:5000/api/
+            {{- end }}
+            # Ensure workers can resolve GSM/SSM placeholders like ${gsm:...}
+            - name: conductor.secrets.type
+              value: {{ $secretsType | quote }}
             {{- if $securityEnabled }}
             - name: conductor.security.client.key-id
               value: {{ .Values.workers.accessKeyId | quote }}

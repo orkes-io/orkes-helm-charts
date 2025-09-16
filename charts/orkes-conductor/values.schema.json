@@ -57,6 +57,7 @@
           "type": "string",
           "enum": [
             "azkv",
+            "gcp",
             "memory",
             "ssm"
           ]
@@ -70,10 +71,19 @@
           "type": "string",
           "enum": [
             "azkv",
+            "gcp",
             "memory",
             "ssm"
           ]
-        }
+        },
+        "ssmPath": { "type": "string" },
+        "gsmPath": { "type": "string" }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "annotations": { "type": "object" }
       }
     },
     "workers": {
