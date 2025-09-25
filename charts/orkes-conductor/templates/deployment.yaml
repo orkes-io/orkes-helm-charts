@@ -340,6 +340,12 @@ spec:
               value: {{ .Values.app.apiRateLimiterEnabled | quote }}
             - name: conductor.human-task.enabled
               value: {{ .Values.app.humanTasksEnabled | default "false" | quote }}
+            - name: conductor.app.workflow.introspection.enabled
+              value: {{ .Values.app.workflowIntrospection.enabled | default "false" | quote }}
+            - name: conductor.app.workflow.introspection.recordExpirationInSeconds
+              value: {{ .Values.app.workflowIntrospection.recordExpirationInSeconds | default 86400 | quote }}
+            - name: conductor.app.workflow.introspection.batchInsertIntervalInMillis
+              value: {{ .Values.app.workflowIntrospection.batchInsertIntervalInMillis | default 1000 | quote }}
             - name: LOCAL_HOST_IP
               valueFrom:
                 fieldRef:
