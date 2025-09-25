@@ -67,7 +67,7 @@ app:
   # production environments due to the high volume of data generated and increased load on the database.
   workflowIntrospection:
     enabled: false
-    recordExpirationInSeconds: 86400 # 1 day
+    recordExpirationInSeconds: 86400  # 1 day
     batchInsertIntervalInMillis: 1000
 
 # Provide the name of the key vault if you are using key vault for secret management
