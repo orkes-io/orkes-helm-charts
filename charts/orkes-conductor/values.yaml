@@ -162,6 +162,8 @@ security:
 #    audience:
 #    metadataUrl:
 #    emailClaim:
+#  # Note: native Okta integration is not officially deprecated, but we recommend using OIDC instead. The OIDC integration
+#  # is much more flexible, more commonly used, and is going to be more actively maintained in the future.
 #  okta:
 #    clientId:
 #    audience:
