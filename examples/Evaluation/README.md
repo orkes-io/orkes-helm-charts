@@ -1,3 +1,7 @@
+This example includes properties and commands to deploy Orkes Conductor along with its prerequisites for evaluation
+purposes. It uses a standalone PostgreSQL database and Redis instance deployed via Helm charts. These configurations are
+NOT production-ready and should only be used for evaluation.
+
 ## Install Dependencies
 
 ### Add the Bitnami Helm repository:
