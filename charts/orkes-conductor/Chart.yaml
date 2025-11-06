@@ -1,8 +1,0 @@
-apiVersion: v2
-name: orkes-conductor
-description: Orkes Conductor
-
-type: application
-
-version: 2.7.49
-appVersion: "5.2.42"

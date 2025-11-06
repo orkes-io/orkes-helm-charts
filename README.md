@@ -24,7 +24,7 @@ Orkes Conductor loads its configuration from two properties files: `conductor.pr
 the "examples" folder for sample properties files.
 
 ```shell
-helm install orkes-conductor ../../ --namespace orkes-conductor \
+helm install orkes-conductor orkesio/orkes-conductor --namespace orkes-conductor \
   --set-file conductor.properties=<PATH_TO_CONDUCTOR_PROPERTIES> \
   --set-file workers.properties=<PATH_TO_WORKER_PROPERTIES>
 ```

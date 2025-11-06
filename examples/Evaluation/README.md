@@ -38,7 +38,7 @@ helm install orkes-conductor-postgres bitnami/postgresql --namespace orkes-condu
 
 ## Install Orkes Conductor
 ```shell
-helm install orkes-conductor ../../ --namespace orkes-conductor \
+helm upgrade --install orkes-conductor ../../ --namespace orkes-conductor \
   --set conductor.replicaCount=1 \
   --set workers.replicaCount=1 \
   --set-file conductor.properties=conductor.properties \

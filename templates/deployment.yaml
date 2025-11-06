@@ -1,3 +1,15 @@
+{{- /* Inline helper: returns the effective properties content (string or single-entry map value) */ -}}
+{{- define "orkes.propertiesContent" -}}
+{{- $p := . -}}
+{{- if eq (kindOf $p) "string" -}}
+{{ $p }}
+{{- else -}}
+{{- range $k, $v := $p -}}
+{{ $v }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -82,6 +94,8 @@ spec:
         app.kubernetes.io/name: orkes-conductor
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: app
+      annotations:
+        orkes.io/checksum-conductor-properties: {{ include "orkes.propertiesContent" .Values.conductor.properties | sha256sum }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -138,3 +152,5 @@ spec:
         app.kubernetes.io/name: orkes-conductor
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: workers
+      annotations:
+        orkes.io/checksum-workers-properties: {{ include "orkes.propertiesContent" .Values.workers.properties | sha256sum }}
