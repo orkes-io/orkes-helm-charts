@@ -42,8 +42,6 @@ spec:
                 -XX:InitialRAMPercentage={{ .Values.conductor.initialMemoryPercentage }}
                 -XX:MaxRAMPercentage={{ .Values.conductor.maxMemoryPercentage }}
                 -XX:+ExitOnOutOfMemoryError
-            - name: CONDUCTOR_CONFIG_FILE
-              value: /app-config/config.properties
             - name: LOCAL_HOST_IP
               valueFrom:
                 fieldRef:
@@ -72,7 +70,8 @@ spec:
             periodSeconds: 10
           volumeMounts:
             - name: app-config
-              mountPath: /app-config
+              mountPath: /app/config/config.properties
+              subPath: config.properties
               readOnly: true
       {{- if .Values.image.repositorySecretName }}
       imagePullSecrets:
@@ -126,11 +125,10 @@ spec:
                 -XX:InitialRAMPercentage={{ .Values.workers.initialMemoryPercentage }}
                 -XX:MaxRAMPercentage={{ .Values.workers.maxMemoryPercentage }}
                 -XX:+ExitOnOutOfMemoryError
-            - name: CONDUCTOR_CONFIG_FILE
-              value: /app-config/config.properties
           volumeMounts:
             - name: workers-config
-              mountPath: /app-config
+              mountPath: /app/config/config.properties
+              subPath: config.properties
               readOnly: true
       {{- if .Values.image.repositorySecretName }}
       imagePullSecrets:
