@@ -1,0 +1,8 @@
+apiVersion: v2
+name: orkes-conductor
+description: Orkes Conductor
+
+type: application
+
+version: 3.0.0
+appVersion: "5.2.42-rc2-docker-fixes"

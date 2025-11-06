@@ -1,0 +1,48 @@
+# Container image configuration. You probably will not need to change this.
+image:
+  pullPolicy: IfNotPresent
+  # Name of a pre-created image pull secret (docker-registry) to use for pulling images.
+  # Set to an empty string if no registry auth is required.
+  repositorySecretName: orkes-registry
+
+conductor:
+  # Infrastructure-level settings for the Conductor server pods.
+  replicaCount: 3
+  ports:
+    ui:  5000
+    api: 8080
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "1500Mi"
+    limits:
+      cpu: "2000m"
+      memory: "2500Mi"
+  initialMemoryPercentage: 40.0
+  maxMemoryPercentage: 70.0
+  serviceAccount:
+    annotations: {}
+  # End users must provide properties via --set-file into this map.
+  # Keys may omit the .properties suffix; the chart appends it when rendering and importing.
+  properties: ""
+
+# These properties configure the deployment of Orkes' built-in workers, not any
+# custom workers you may have.
+workers:
+  # Infrastructure-level settings for the Orkes Workers pods.
+  replicaCount: 2
+  # Workers do not expose any ports for liveness or readiness probes (today).
+  resources:
+    requests:
+      cpu: "750m"
+      memory: "750Mi"
+    limits:
+      cpu: "1500m"
+      memory: "1500Mi"
+  initialMemoryPercentage: 40.0
+  maxMemoryPercentage: 70.0
+  serviceAccount:
+    annotations: {}
+  # End users must provide properties via --set-file into this map.
+  # Keys may omit the .properties suffix; the chart appends it when rendering and importing.
+  properties: ""
