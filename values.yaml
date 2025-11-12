@@ -5,6 +5,10 @@ image:
   # Set to an empty string if no registry auth is required.
   repositorySecretName: orkes-registry
 
+# The name of the Conductor cluster. This value is injected into both the Conductor server and worker pods. If absent,
+# the release name is used.
+clusterName:
+
 conductor:
   # Infrastructure-level settings for the Conductor server pods.
   replicaCount: 3
