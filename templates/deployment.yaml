@@ -48,6 +48,12 @@ spec:
                   fieldPath: status.podIP
             - name: SPRING_PROFILES_ACTIVE
               value: logrotate,postgres
+            {{- if .Values.conductor.env }}
+            {{- range $key, $value := .Values.conductor.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
           ports:
             - name: ui
               containerPort: 5000
@@ -125,6 +131,12 @@ spec:
                 -XX:InitialRAMPercentage={{ .Values.workers.initialMemoryPercentage }}
                 -XX:MaxRAMPercentage={{ .Values.workers.maxMemoryPercentage }}
                 -XX:+ExitOnOutOfMemoryError
+            {{- if .Values.workers.env }}
+            {{- range $key, $value := .Values.workers.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
           volumeMounts:
             - name: workers-config
               mountPath: /app/config/config.properties

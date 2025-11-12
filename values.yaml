@@ -25,6 +25,11 @@ conductor:
   # End users must provide properties via --set-file into this map.
   # Keys may omit the .properties suffix; the chart appends it when rendering and importing.
   properties: ""
+  # Additional environment variables to set in the Conductor server pods. The majority of Conductor-related
+  # configuration should be done via the properties file instead, but this map may be used for settings that come from
+  # an external system dynamically (such as Redis or PostgreSQL connection URLs, credentials, etc).
+  # NOTE: These values will override any equivalent settings in the properties file.
+  env: {}
 
 # These properties configure the deployment of Orkes' built-in workers, not any
 # custom workers you may have.
@@ -46,3 +51,8 @@ workers:
   # End users must provide properties via --set-file into this map.
   # Keys may omit the .properties suffix; the chart appends it when rendering and importing.
   properties: ""
+  # Additional environment variables to set in the Conductor worker pods. The majority of Conductor-related
+  # configuration should be done via the properties file instead, but this map may be used for settings that come from
+  # an external system dynamically.
+  # NOTE: These values will override any equivalent settings in the properties file.
+  env: {}
