@@ -27,7 +27,6 @@ helm install orkes-conductor-redis bitnami/redis --namespace orkes-conductor --c
 helm install orkes-conductor-postgres bitnami/postgresql --namespace orkes-conductor \
   --set auth.username=postgres \
   --set auth.password=postgres \
-  --set auth.database=conductor \
   --set primary.resources.requests.memory=256Mi \
   --set primary.resources.requests.cpu=200m \
   --set readReplicas.resources.requests.memory=256Mi \
