@@ -35,6 +35,15 @@ spec:
         app.kubernetes.io/component: app
       annotations:
         orkes.io/checksum-conductor-properties: {{ include "orkes.propertiesContent" .Values.conductor.properties | sha256sum }}
+        {{- if and .Values.vault.enabled .Values.vault.conductor.enabled }}
+        {{- if .Values.vault.conductor.role }}
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: {{ .Values.vault.conductor.role | quote }}
+        {{- end }}
+        {{- with .Values.vault.conductor.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- end }}
     spec:
       containers:
         - name: orkes-conductor
@@ -129,6 +138,15 @@ spec:
         app.kubernetes.io/component: workers
       annotations:
         orkes.io/checksum-workers-properties: {{ include "orkes.propertiesContent" .Values.workers.properties | sha256sum }}
+        {{- if and .Values.vault.enabled .Values.vault.workers.enabled }}
+        {{- if .Values.vault.workers.role }}
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: {{ .Values.vault.workers.role | quote }}
+        {{- end }}
+        {{- with .Values.vault.workers.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- end }}
     spec:
       containers:
         - name: orkes-workers

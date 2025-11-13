@@ -2,8 +2,42 @@
 image:
   pullPolicy: IfNotPresent
   # Name of a pre-created image pull secret (docker-registry) to use for pulling images.
-  # Set to an empty string if no registry auth is required.
+  # NOTE: check README.md for the command to create the secret
+  # Default: "orkes-registry" - the default Orkes registry secret
+  # To use your own secret, set this to your secret name: repositorySecretName: "my-registry-secret"
+  # To disable image pull secrets entirely, set to empty string: repositorySecretName: ""
   repositorySecretName: orkes-registry
+
+# Vault secret injection configuration (optional)
+# Enable this to inject secrets from HashiCorp Vault into your pods
+vault:
+  enabled: false
+  # Vault agent injector annotations for the conductor pods
+  # See: https://developer.hashicorp.com/vault/docs/platform/k8s/injector/annotations
+  conductor:
+    # Enable Vault injection for conductor pods
+    enabled: false
+    # Vault role to use for authentication
+    role: ""
+    # Example annotations for Vault secret injection:
+    # annotations:
+    #   vault.hashicorp.com/agent-inject: "true"
+    #   vault.hashicorp.com/role: "orkes-conductor"
+    #   vault.hashicorp.com/agent-inject-secret-database: "secret/data/database/config"
+    #   vault.hashicorp.com/agent-inject-template-database: |
+    #     {{- with secret "secret/data/database/config" -}}
+    #     export DB_HOST="{{ .Data.data.host }}"
+    #     export DB_PASSWORD="{{ .Data.data.password }}"
+    #     {{- end }}
+    annotations: {}
+  # Vault agent injector annotations for the workers pods
+  workers:
+    # Enable Vault injection for worker pods
+    enabled: false
+    # Vault role to use for authentication
+    role: ""
+    # Example annotations - same format as conductor
+    annotations: {}
 
 # The name of the Conductor cluster. This value is injected into both the Conductor server and worker pods. If absent,
 # the release name is used.

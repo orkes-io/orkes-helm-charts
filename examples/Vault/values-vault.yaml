@@ -1,0 +1,88 @@
+# Example values file for HashiCorp Vault integration
+# This demonstrates how to enable Vault secret injection for Orkes Conductor
+# with PostgreSQL and Redis credentials
+
+# Enable Vault secret injection
+vault:
+  enabled: true
+
+  # Vault configuration for Conductor pods
+  conductor:
+    enabled: true
+    role: "orkes-conductor"  # Vault role for Conductor authentication
+    annotations:
+      # Inject PostgreSQL database credentials
+      vault.hashicorp.com/agent-inject-secret-postgres: "secret/data/orkes/postgres"
+      vault.hashicorp.com/agent-inject-template-postgres: |
+        {{- with secret "secret/data/orkes/postgres" -}}
+        export DB_HOST="{{ .Data.data.host }}"
+        export DB_PORT="{{ .Data.data.port }}"
+        export DB_NAME="{{ .Data.data.database }}"
+        export DB_USER="{{ .Data.data.username }}"
+        export DB_PASSWORD="{{ .Data.data.password }}"
+        {{- end }}
+
+      # Inject Redis credentials
+      vault.hashicorp.com/agent-inject-secret-redis: "secret/data/orkes/redis"
+      vault.hashicorp.com/agent-inject-template-redis: |
+        {{- with secret "secret/data/orkes/redis" -}}
+        export REDIS_HOST="{{ .Data.data.host }}"
+        export REDIS_PORT="{{ .Data.data.port }}"
+        export REDIS_PASSWORD="{{ .Data.data.password }}"
+        {{- end }}
+
+      # Source the secrets before the application starts
+      # This makes the environment variables available to the Java application
+      vault.hashicorp.com/agent-inject-command-postgres: "/bin/sh -c 'source /vault/secrets/postgres && source /vault/secrets/redis && exec /app/entrypoint.sh'"
+
+      # Optional: Customize Vault namespace (for Vault Enterprise)
+      # vault.hashicorp.com/namespace: "my-namespace"
+
+      # Optional: Preserve case for environment variables
+      vault.hashicorp.com/preserve-secret-case: "true"
+
+      # Optional: Customize agent container resources
+      # vault.hashicorp.com/agent-limits-cpu: "500m"
+      # vault.hashicorp.com/agent-limits-mem: "256Mi"
+      # vault.hashicorp.com/agent-requests-cpu: "250m"
+      # vault.hashicorp.com/agent-requests-mem: "128Mi"
+
+  # Vault configuration for Workers pods
+  workers:
+    enabled: true
+    role: "orkes-workers"  # Vault role for Workers authentication
+    annotations:
+      # Workers also need access to PostgreSQL and Redis
+      vault.hashicorp.com/agent-inject-secret-postgres: "secret/data/orkes/postgres"
+      vault.hashicorp.com/agent-inject-template-postgres: |
+        {{- with secret "secret/data/orkes/postgres" -}}
+        export DB_HOST="{{ .Data.data.host }}"
+        export DB_PORT="{{ .Data.data.port }}"
+        export DB_NAME="{{ .Data.data.database }}"
+        export DB_USER="{{ .Data.data.username }}"
+        export DB_PASSWORD="{{ .Data.data.password }}"
+        {{- end }}
+
+      vault.hashicorp.com/agent-inject-secret-redis: "secret/data/orkes/redis"
+      vault.hashicorp.com/agent-inject-template-redis: |
+        {{- with secret "secret/data/orkes/redis" -}}
+        export REDIS_HOST="{{ .Data.data.host }}"
+        export REDIS_PORT="{{ .Data.data.port }}"
+        export REDIS_PASSWORD="{{ .Data.data.password }}"
+        {{- end }}
+
+      # Source the secrets before the application starts
+      vault.hashicorp.com/agent-inject-command-postgres: "/bin/sh -c 'source /vault/secrets/postgres && source /vault/secrets/redis && exec /app/entrypoint.sh'"
+
+      vault.hashicorp.com/preserve-secret-case: "true"
+
+# Example: Keep using traditional secrets for image pull
+image:
+  repositorySecretName: orkes-registry
+
+# Other configuration remains the same
+conductor:
+  replicaCount: 3
+
+workers:
+  replicaCount: 2
