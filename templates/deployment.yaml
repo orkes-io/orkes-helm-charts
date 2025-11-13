@@ -146,6 +146,13 @@ spec:
               mountPath: /app/config/config.properties
               subPath: config.properties
               readOnly: true
+          resources:
+            limits:
+              cpu: {{ .Values.workers.resources.limits.cpu }}
+              memory: {{ .Values.workers.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.workers.resources.requests.cpu }}
+              memory: {{ .Values.workers.resources.requests.memory }}
       {{- if .Values.image.repositorySecretName }}
       imagePullSecrets:
         - name: {{ .Values.image.repositorySecretName }}
