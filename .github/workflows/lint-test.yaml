@@ -45,6 +45,8 @@ jobs:
 
       - name: Set up Docker secret
         run: kubectl create secret docker-registry orkes-registry --namespace orkes-conductor --docker-server=https://index.docker.io/v1/ --docker-username=orkesdocker --docker-password=${{ secrets.DOCKER_HUB_TOKEN }} --docker-email=dockeracess@orkes.io
+        if: steps.list-changed.outputs.changed == 'true'
 
       - name: Run chart-testing (install)
         run: ct install --config "${CONFIG_FILE}" --helm-extra-set-args="--set-file=conductor.properties=examples/Evaluation/conductor.properties --set-file=workers.properties=examples/Evaluation/workers.properties" --charts .
+        if: steps.list-changed.outputs.changed == 'true'
