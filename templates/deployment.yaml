@@ -1,0 +1,177 @@
+{{- /* Inline helper: returns the effective properties content (string or single-entry map value) */ -}}
+{{- define "orkes.propertiesContent" -}}
+{{- $p := . -}}
+{{- if eq (kindOf $p) "string" -}}
+{{ $p }}
+{{- else -}}
+{{- range $k, $v := $p -}}
+{{ $v }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-conductor
+  labels:
+    app.kubernetes.io/name: orkes-conductor
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: app
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: {{ .Values.conductor.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orkes-conductor
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: app
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: orkes-conductor
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: app
+      annotations:
+        orkes.io/checksum-conductor-properties: {{ include "orkes.propertiesContent" .Values.conductor.properties | sha256sum }}
+    spec:
+      containers:
+        - name: orkes-conductor
+          image: "orkesio/orkes-conductor-server:{{ default .Chart.AppVersion (tpl (default "" .Values.image.tag) .) }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: JVM_MEMORY_SETTINGS # In theory, we could put these in JAVA_TOOL_OPTIONS, but Conductor's startup
+                                        # script parses this variable specifically to set memory options before
+                                        # launching the JVM, which would override any settings in JAVA_TOOL_OPTIONS.
+                                        # Note that we do the same thing in the workers deployment below.
+              value: >
+                -XX:InitialRAMPercentage={{ .Values.conductor.initialMemoryPercentage }}
+                -XX:MaxRAMPercentage={{ .Values.conductor.maxMemoryPercentage }}
+                -XX:+ExitOnOutOfMemoryError
+            - name: LOCAL_HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SPRING_PROFILES_ACTIVE
+              value: logrotate,postgres
+            - name: ORKES_CLUSTER_NAME
+              value: {{ default .Release.Name .Values.clusterName }}
+            {{- if .Values.conductor.env }}
+            {{- range $key, $value := .Values.conductor.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
+          ports:
+            - name: ui
+              containerPort: 5000
+              protocol: TCP
+            - name: api
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            limits:
+              cpu: {{ .Values.conductor.resources.limits.cpu }}
+              memory: {{ .Values.conductor.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.conductor.resources.requests.cpu }}
+              memory: {{ .Values.conductor.resources.requests.memory }}
+          startupProbe:
+            httpGet:
+              path: /health
+              port: ui
+            failureThreshold: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: app-config
+              mountPath: /app/config/config.properties
+              subPath: config.properties
+              readOnly: true
+      {{- if .Values.image.repositorySecretName }}
+      imagePullSecrets:
+        - name: {{ .Values.image.repositorySecretName }}
+      {{- end }}
+      restartPolicy: Always
+      securityContext: { }
+      serviceAccountName: conductor-app
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: app-config
+          configMap:
+            name: {{ .Release.Name }}-properties
+            items:
+              - key: config.properties
+                path: config.properties
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-workers
+  labels:
+    app.kubernetes.io/name: orkes-conductor
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: workers
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: {{ .Values.workers.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orkes-conductor
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: workers
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: orkes-conductor
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: workers
+      annotations:
+        orkes.io/checksum-workers-properties: {{ include "orkes.propertiesContent" .Values.workers.properties | sha256sum }}
+    spec:
+      containers:
+        - name: orkes-workers
+          image: "orkesio/orkes-conductor-workers:{{ default .Chart.AppVersion (tpl (default "" .Values.image.tag) .) }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: JVM_MEMORY_SETTINGS # See note in the conductor deployment above about why we set this variable.
+              value: >
+                -XX:InitialRAMPercentage={{ .Values.workers.initialMemoryPercentage }}
+                -XX:MaxRAMPercentage={{ .Values.workers.maxMemoryPercentage }}
+                -XX:+ExitOnOutOfMemoryError
+            - name: ORKES_CLUSTER_NAME
+              value: {{ default .Release.Name .Values.clusterName }}
+            {{- if .Values.workers.env }}
+            {{- range $key, $value := .Values.workers.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
+          volumeMounts:
+            - name: workers-config
+              mountPath: /app/config/config.properties
+              subPath: config.properties
+              readOnly: true
+          resources:
+            limits:
+              cpu: {{ .Values.workers.resources.limits.cpu }}
+              memory: {{ .Values.workers.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.workers.resources.requests.cpu }}
+              memory: {{ .Values.workers.resources.requests.memory }}
+      {{- if .Values.image.repositorySecretName }}
+      imagePullSecrets:
+        - name: {{ .Values.image.repositorySecretName }}
+      {{- end }}
+      restartPolicy: Always
+      securityContext: { }
+      serviceAccountName: conductor-workers-app
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: workers-config
+          configMap:
+            name: {{ .Release.Name }}-workers-properties
+            items:
+              - key: config.properties
+                path: config.properties
