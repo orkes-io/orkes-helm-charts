@@ -80,9 +80,103 @@ vault:
 image:
   repositorySecretName: orkes-registry
 
-# Other configuration remains the same
+# Conductor configuration with inline properties
 conductor:
   replicaCount: 3
+  # Conductor properties - combines base config with Vault variable placeholders
+  # Vault environment variables (${DB_HOST}, ${DB_PASSWORD}, etc.) will override at runtime
+  properties: |
+    # Database configuration - uses Vault-injected environment variables
+    conductor.db.type=postgres
+    conductor.archive.db.document.store.type=postgres
 
+    # PostgreSQL connection - Vault variables take precedence
+    spring.datasource.url=jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME:conductor}
+    spring.datasource.username=${DB_USER}
+    spring.datasource.password=${DB_PASSWORD}
+
+    # Connection pool settings
+    spring.datasource.hikari.maximum-pool-size=10
+    spring.datasource.hikari.minimum-idle=2
+    spring.datasource.hikari.connection-timeout=30000
+    spring.datasource.hikari.idle-timeout=600000
+    spring.datasource.hikari.max-lifetime=1800000
+
+    # Redis configuration - Vault variables take precedence
+    conductor.redis.hosts=${REDIS_HOST}:${REDIS_PORT:6379}:us-east-1c
+    conductor.redis.password=${REDIS_PASSWORD}
+    conductor.redis.workflowExecutionPersistenceTTL=0
+    conductor.redis.queueShardSize=1
+
+    # Queue configuration
+    conductor.queue.type=redis_standalone
+
+    # Redis settings
+    conductor.redis.workflowNamespacePrefix=conductor
+    conductor.redis.queuesNonQuorumPort=6379
+    conductor.redis.queueNamespacePrefix=conductor_queues
+
+    # Secrets management
+    conductor.secrets.type=memory
+
+    # Task indexing
+    conductor.task.indexing.enabled=false
+    conductor.indexing.enabled=true
+    conductor.app.asyncIndexingEnabled=true
+    conductor.app.async-indexing-enabled=false
+
+    # Thread configuration
+    queues.dynomite.threads=10
+    conductor.app.eventProcessorThreadCount=8
+    conductor.app.eventQueueSchedulerPollThreadCount=8
+    conductor.app.systemTaskWorkerThreadCount=12
+
+    # Application settings
+    conductor.app.workflowRepairServiceEnabled=true
+    conductor.app.workflow-execution-lock-enabled=true
+    conductor.app.lockLeaseTime=120000
+    conductor.workflow.execution.maxTimeInMillis=10000
+    conductor.api.orchestration.enabled=true
+    conductor.workflow-status-listener.type=archive
+
+    # Server settings
+    server.port=8080
+    spring.application.name=conductor-server
+
+    # Logging
+    logging.level.root=INFO
+    logging.level.com.netflix.conductor=INFO
+    logging.level.io.orkes.conductor.OrkesConductorApplication=INFO
+
+# Workers configuration with inline properties
 workers:
   replicaCount: 2
+  # Workers properties - combines base config with Vault variable placeholders
+  properties: |
+    # Conductor server connection
+    conductor.server.url=http://orkes-conductor-service:8080/api
+    conductor.worker.all.domain=worker
+    conductor.client.baseUrl=http://orkes-conductor-service:8080/api
+
+    # Database configuration - uses Vault-injected environment variables
+    spring.datasource.url=jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME:conductor}
+    spring.datasource.username=${DB_USER}
+    spring.datasource.password=${DB_PASSWORD}
+
+    # Redis configuration - uses Vault-injected environment variables
+    conductor.redis.hosts=${REDIS_HOST}:${REDIS_PORT:6379}:us-east-1c
+    conductor.redis.password=${REDIS_PASSWORD}
+
+    # Worker settings
+    conductor.worker.all.pollInterval=100
+    conductor.worker.all.threadCount=10
+    conductor.worker.HTTP.threadCount=3
+    conductor.worker.HTTP.enabled=true
+    conductor.worker.WAIT.threadCount=1
+
+    # AI integrations
+    conductor.integrations.ai.enabled=false
+
+    # Logging
+    logging.level.root=INFO
+    logging.level.com.netflix.conductor=INFO

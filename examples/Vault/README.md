@@ -92,31 +92,32 @@ vault write auth/kubernetes/role/orkes-workers \
 
 ## Usage
 
-### Option 1: Using Helm with values file
+### Option 1: Using Helm with values file (Recommended)
 
-Install the chart with the Vault-enabled values file and properties files configured for Vault:
+Install the chart with the Vault-enabled values file. **No need for `--set-file`** - properties are embedded in the values file:
 
 ```bash
 helm install orkes-conductor orkesio/orkes-conductor \
   --namespace orkes-conductor \
   --create-namespace \
-  -f values-vault.yaml \
-  --set-file conductor.properties=conductor.properties \
-  --set-file workers.properties=workers.properties
+  -f values-vault.yaml
 ```
 
-**Note:** The `conductor.properties` and `workers.properties` files in this directory are configured to use environment variables (e.g., `${DB_HOST}`, `${DB_PASSWORD}`) that will be injected by Vault.
+**That's it!** The `values-vault.yaml` file contains:
+- Complete conductor and workers properties with Vault variable placeholders
+- Vault configuration for both conductor and workers
+- All settings needed for PostgreSQL and Redis secret injection
 
 ### Option 2: Using ArgoCD
 
-Store the configuration files in a Git repository and reference them in ArgoCD:
+**Simple approach - Reference the values file from Git:**
 
-**Repository Structure:**
+Store the `values-vault.yaml` in your Git repository:
+
 ```
 your-config-repo/
-├── orkes/
-│   ├── conductor.properties  # With ${DB_HOST}, ${DB_PASSWORD} variables
-│   └── workers.properties    # With environment variable placeholders
+└── orkes/
+    └── values-vault.yaml
 ```
 
 **ArgoCD Application:**
@@ -134,11 +135,37 @@ spec:
     chart: orkes-conductor
     targetRevision: 3.0.0
     helm:
-      fileParameters:
-        - name: conductor.properties
-          path: orkes/conductor.properties  # From your config repo
-        - name: workers.properties
-          path: orkes/workers.properties
+      # Simply reference your values file from your Git repo
+      valueFiles:
+        - https://raw.githubusercontent.com/your-org/your-config-repo/main/orkes/values-vault.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: orkes-conductor
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+```
+
+**Alternative - Inline the Vault configuration in ArgoCD:**
+
+If you prefer to keep everything in the Application manifest:
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: orkes-conductor
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://orkes-io.github.io/orkes-helm-charts
+    chart: orkes-conductor
+    targetRevision: 3.0.0
+    helm:
       parameters:
         - name: vault.enabled
           value: "true"
@@ -190,6 +217,23 @@ spec:
                 export REDIS_PASSWORD="{{ .Data.data.password }}"
                 {{- end }}
               vault.hashicorp.com/preserve-secret-case: "true"
+
+        conductor:
+          properties: |
+            conductor.db.type=postgres
+            spring.datasource.url=jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME:conductor}
+            spring.datasource.username=${DB_USER}
+            spring.datasource.password=${DB_PASSWORD}
+            conductor.redis.hosts=${REDIS_HOST}:${REDIS_PORT:6379}:us-east-1c
+            conductor.redis.password=${REDIS_PASSWORD}
+            # ... add other properties as needed
+
+        workers:
+          properties: |
+            conductor.server.url=http://orkes-conductor-service:8080/api
+            spring.datasource.url=jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME:conductor}
+            conductor.redis.hosts=${REDIS_HOST}:${REDIS_PORT:6379}:us-east-1c
+            # ... add other properties as needed
   destination:
     server: https://kubernetes.default.svc
     namespace: orkes-conductor
