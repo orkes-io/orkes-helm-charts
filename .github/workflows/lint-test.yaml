@@ -44,9 +44,16 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
 
       - name: Set up Docker secret
-        run: kubectl create secret docker-registry orkes-registry --docker-server=https://index.docker.io/v1/ --docker-username=${{ secrets.DOCKER_HUB_USERNAME }} --docker-password=${{ secrets.DOCKER_HUB_TOKEN }} --docker-email=${{ secrets.DOCKER_HUB_EMAIL }}
+        run: |
+          kubectl create namespace chart-testing || true
+          kubectl create secret docker-registry orkes-registry \
+            --docker-server=https://index.docker.io/v1/ \
+            --docker-username=${{ secrets.DOCKER_HUB_USERNAME }} \
+            --docker-password=${{ secrets.DOCKER_HUB_TOKEN }} \
+            --docker-email=${{ secrets.DOCKER_HUB_EMAIL }} \
+            --namespace=chart-testing
         if: steps.list-changed.outputs.changed == 'true'
 
       - name: Run chart-testing (install)
-        run: ct install --config "${CONFIG_FILE}" --helm-extra-set-args="--set-file=conductor.properties=examples/Evaluation/conductor.properties --set-file=workers.properties=examples/Evaluation/workers.properties" --charts charts/orkes-conductor
+        run: ct install --config "${CONFIG_FILE}" --namespace chart-testing --helm-extra-set-args="--set-file=conductor.properties=examples/Evaluation/conductor.properties --set-file=workers.properties=examples/Evaluation/workers.properties" --charts charts/orkes-conductor
         if: steps.list-changed.outputs.changed == 'true'
