@@ -83,5 +83,10 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
 
       - name: Run chart-testing (install)
-        run: ct install --config "${CONFIG_FILE}" --namespace chart-testing --helm-extra-set-args="--set-file=conductor.properties=examples/Evaluation/conductor.properties.test --set-file=workers.properties=examples/Evaluation/workers.properties.test" --charts charts/orkes-conductor
+        run: |
+          ct install \
+            --config "${CONFIG_FILE}" \
+            --namespace chart-testing \
+            --helm-extra-set-args="--set-file=conductor.properties=examples/Evaluation/conductor.properties.test --set-file=workers.properties=examples/Evaluation/workers.properties.test --set conductor.replicaCount=1 --set workers.replicaCount=1" \
+            --charts charts/orkes-conductor
         if: steps.list-changed.outputs.changed == 'true'
