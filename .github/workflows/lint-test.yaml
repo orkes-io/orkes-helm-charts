@@ -54,6 +54,34 @@ jobs:
             --namespace=chart-testing
         if: steps.list-changed.outputs.changed == 'true'
 
+      - name: Add Bitnami Helm repository
+        run: helm repo add bitnami https://charts.bitnami.com/bitnami && helm repo update
+        if: steps.list-changed.outputs.changed == 'true'
+
+      - name: Install Redis
+        run: |
+          helm install orkes-conductor-redis bitnami/redis \
+            --namespace chart-testing \
+            --set architecture=standalone \
+            --set auth.enabled=false \
+            --set master.resources.requests.memory=256Mi \
+            --set master.resources.requests.cpu=200m \
+            --set master.persistence.enabled=false \
+            --wait --timeout 5m
+        if: steps.list-changed.outputs.changed == 'true'
+
+      - name: Install PostgreSQL
+        run: |
+          helm install orkes-conductor-postgres bitnami/postgresql \
+            --namespace chart-testing \
+            --set auth.username=postgres \
+            --set auth.password=postgres \
+            --set primary.resources.requests.memory=256Mi \
+            --set primary.resources.requests.cpu=200m \
+            --set primary.persistence.enabled=false \
+            --wait --timeout 5m
+        if: steps.list-changed.outputs.changed == 'true'
+
       - name: Run chart-testing (install)
-        run: ct install --config "${CONFIG_FILE}" --namespace chart-testing --helm-extra-set-args="--set-file=conductor.properties=examples/Evaluation/conductor.properties --set-file=workers.properties=examples/Evaluation/workers.properties" --charts charts/orkes-conductor
+        run: ct install --config "${CONFIG_FILE}" --namespace chart-testing --helm-extra-set-args="--set-file=conductor.properties=examples/Evaluation/conductor.properties.test --set-file=workers.properties=examples/Evaluation/workers.properties.test" --charts charts/orkes-conductor
         if: steps.list-changed.outputs.changed == 'true'

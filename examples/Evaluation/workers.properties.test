@@ -1,0 +1,9 @@
+conductor.server.url=http://orkes-conductor-server.chart-testing.svc.cluster.local:5000/api
+conductor.worker.HTTP.threadCount=3
+conductor.worker.HTTP.enabled=true
+conductor.worker.WAIT.threadCount=1
+
+# ----
+
+conductor.integrations.ai.enabled=false
+
