@@ -1,28 +1,28 @@
 {{- $securityEnabled := eq (toString .Values.security.enabled) "true" -}}
-{{- $clusterMode := eq (toString .Values.redis.clusterMode) "true" -}}
-{{- $enableCustomTrustStore := eq (toString .Values.enableCustomTrustStore) "true" -}}
-{{- $vaultEnabled := and .Values.vault.enabled (or .Values.vault.server.enabled .Values.vault.workers.enabled) -}}
+{{- $clusterMode := eq (toString (include "orkes-conductor.redis.clusterMode" .)) "true" -}}
+{{- $enableCustomTrustStore := or (eq (toString .Values.trustStore.enabled) "true") (eq (toString .Values.enableCustomTrustStore) "true") -}}
+{{- $vaultEnabled := and (include "orkes-conductor.vault.enabled" . | eq "true") (or (include "orkes-conductor.vault.server.enabled" . | eq "true") (include "orkes-conductor.vault.workers.enabled" . | eq "true")) -}}
 {{- if $securityEnabled -}}
   {{- $validation := .Values.security.defaultUserEmail | required "security.defaultUserEmail is required." -}}
   {{- $validation := .Values.security.defaultUserName | required "security.defaultUserName is required." -}}
   {{- if not $vaultEnabled -}}
     {{- $validation := .Values.security.jwt.secret | required "security.jwt.secret is required (unless using Vault)." -}}
-    {{- $validation := .Values.workersConfig.accessKeyId | required "workersConfig.accessKeyId is required (unless using Vault)." -}}
-    {{- $validation := .Values.workersConfig.accessKeySecret | required "workersConfig.accessKeySecret is required (unless using Vault)." -}}
+    {{- $validation := include "orkes-conductor.workers.accessKeyId" . | required "workers.auth.accessKeyId or workersConfig.accessKeyId is required (unless using Vault)." -}}
+    {{- $validation := include "orkes-conductor.workers.accessKeySecret" . | required "workers.auth.accessKeySecret or workersConfig.accessKeySecret is required (unless using Vault)." -}}
   {{- end -}}
-  {{- if .Values.security.auth0 -}}
+  {{- if and .Values.security.auth0 .Values.security.auth0.enabled -}}
     {{- $validation := .Values.security.auth0.clientId | required "security.auth0.clientId is required." -}}
     {{- $validation := .Values.security.auth0.domain | required ".security.auth0.domain is required." -}}
     {{- if eq (toString .Values.security.auth0.useIdToken) "false" -}}
       {{- $validation := .Values.security.auth0.clientSecret | required "security.auth0.clientSecret is required if useIdToken is false." -}}
     {{- end -}}
   {{- end -}}
-  {{- if .Values.security.oidc -}}
+  {{- if and .Values.security.oidc .Values.security.oidc.enabled -}}
     {{- $validation := .Values.security.oidc.clientId | required "security.oidc.clientId is required." -}}
     {{- $validation := .Values.security.oidc.audience | required "security.oidc.audience is required." -}}
     {{- $validation := .Values.security.oidc.metadataUrl | required "security.oidc.metadataUrl is required." -}}
   {{- end -}}
-  {{- if .Values.security.okta -}}
+  {{- if and .Values.security.okta .Values.security.okta.enabled -}}
     {{- $validation := .Values.security.okta.clientId | required "security.okta.clientId is required." -}}
     {{- $validation := .Values.security.okta.audience | required "security.okta.audience is required." -}}
     {{- $validation := .Values.security.okta.issuer | required "security.okta.issuer is required." -}}
@@ -36,40 +36,53 @@
   {{- $validation := .Values.app.documentStoreAzureBlobEndpoint | required "app.documentStoreAzureBlobEndpoint is required." -}}
   {{- $validation := .Values.app.documentStoreAzureUseSASToken | required "app.documentStoreAzureUseSASToken is required." -}}
 {{- end -}}
-{{- $redisZone := .Values.redis.zoneSuffix | default "us-east-1c" -}}
-{{- $redisHosts := printf "%v:%v:%v" .Values.redis.host .Values.redis.port $redisZone -}}
-{{- if .Values.redis.password -}}
-  {{- $redisHosts = printf "%v:%v" $redisHosts .Values.redis.password -}}
+{{- $redisHost := include "orkes-conductor.redis.host" . -}}
+{{- $redisPort := include "orkes-conductor.redis.port" . -}}
+{{- $redisPassword := include "orkes-conductor.redis.password" . -}}
+{{- $redisZone := include "orkes-conductor.redis.zoneSuffix" . -}}
+{{- $redisHosts := printf "%v:%v:%v" $redisHost $redisPort $redisZone -}}
+{{- if $redisPassword -}}
+  {{- $redisHosts = printf "%v:%v" $redisHosts $redisPassword -}}
 {{- end -}}
-{{- $redisSslEnabled := or .Values.redis.ssl .Values.redis.sslEnabled -}}
+{{- $redisSslEnabledStr := include "orkes-conductor.redis.ssl" . -}}
+{{- $redisSslEnabled := eq $redisSslEnabledStr "true" -}}
 {{- $redisUriScheme := $redisSslEnabled | ternary "rediss" "redis" -}}
-{{- $redisLockServerAddress := printf "%v://%v:%v" $redisUriScheme .Values.redis.host .Values.redis.port -}}
-{{- $postgresUrl := .Values.postgres.url -}}
+{{- $redisLockServerAddress := printf "%v://%v:%v" $redisUriScheme $redisHost $redisPort -}}
+{{- $postgresUrl := include "orkes-conductor.postgres.url" . -}}
 {{- if not $postgresUrl -}}
-  {{- if and .Values.postgres.host .Values.postgres.database -}}
+  {{- $postgresHost := include "orkes-conductor.postgres.host" . -}}
+  {{- $postgresPort := include "orkes-conductor.postgres.port" . -}}
+  {{- $postgresDatabase := include "orkes-conductor.postgres.database" . -}}
+  {{- if and $postgresHost $postgresDatabase -}}
     {{- $sslMode := "" -}}
-    {{- if .Values.postgres.ssl.enabled -}}
-      {{- $sslMode = printf "&sslmode=%s" .Values.postgres.ssl.mode -}}
+    {{- if eq (include "orkes-conductor.postgres.ssl.enabled" .) "true" -}}
+      {{- $sslMode = printf "&sslmode=%s" (include "orkes-conductor.postgres.ssl.mode" .) -}}
     {{- end -}}
-    {{- $postgresUrl = printf "jdbc:postgresql://%s:%v/%s?%s" .Values.postgres.host (.Values.postgres.port | default 5432) .Values.postgres.database $sslMode -}}
+    {{- $postgresUrl = printf "jdbc:postgresql://%s:%v/%s?%s" $postgresHost $postgresPort $postgresDatabase $sslMode -}}
   {{- end -}}
 {{- end -}}
 {{- /*
-  The variables below exist for backwards compatibility
+  The variables below exist for backwards compatibility and helper consolidation
 */}}
-{{- $appReplicaCount := .Values.app.replicaCount | default .Values.replicaCount -}}
-{{- $validation := $appReplicaCount | required "replicaCount (deprecated) or app.replicaCount is required." -}}
-{{- $secretsType := .Values.secrets.type | default .Values.app.secretsType -}}
+{{- $serverReplicas := include "orkes-conductor.server.replicas" . -}}
+{{- $workersReplicas := include "orkes-conductor.workers.replicas" . -}}
+{{- $postgresUsername := include "orkes-conductor.postgres.username" . -}}
+{{- $postgresPassword := include "orkes-conductor.postgres.password" . -}}
+{{- $redisUsername := include "orkes-conductor.redis.username" . -}}
+{{- $redisDbIndex := include "orkes-conductor.redis.dbIndex" . -}}
+{{- $secretsType := .Values.secrets.type | default .Values.app.secretsType | default "memory" -}}
 {{- $useCloudSecrets := or (eq $secretsType "gcp") (or (eq $secretsType "ssm") (eq $secretsType "azkv")) -}}
-{{- $validation := $secretsType | required "app.secretsType (deprecated) or secrets.type is required." -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "orkes-conductor-server.fullname" . }}
   labels:
     {{- include "orkes-conductor.labels" . | nindent 4 }}
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
-  replicas: {{ $appReplicaCount }}
+  replicas: {{ $serverReplicas }}
   selector:
     matchLabels:
       {{- include "orkes-conductor.selectorLabels" . | nindent 6 }}
@@ -79,12 +92,14 @@ spec:
         prometheus.io/path: /actuator/prometheus
         prometheus.io/port: "8080"
         prometheus.io/scrape: "true"
-        {{- if and .Values.vault.enabled .Values.vault.server.enabled }}
+        {{- $vaultServerEnabled := or (and .Values.global.vault.enabled .Values.global.vault.server.enabled) (and .Values.vault.enabled .Values.vault.server.enabled) -}}
+        {{- if $vaultServerEnabled }}
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/agent-inject-status: "update"
-        vault.hashicorp.com/role: {{ .Values.vault.server.role | quote }}
+        vault.hashicorp.com/role: {{ include "orkes-conductor.vault.server.role" . | quote }}
         vault.hashicorp.com/agent-pre-populate-only: "false"
-        {{- range $envVar, $secretPath := .Values.vault.server.envSecrets }}
+        {{- $mergedEnvSecrets := include "orkes-conductor.vault.server.getMergedEnvSecrets" . | fromYaml -}}
+        {{- range $envVar, $secretPath := $mergedEnvSecrets }}
         {{- $parts := splitList "#" $secretPath }}
         {{- $path := index $parts 0 }}
         {{- $key := index $parts 1 }}
@@ -114,8 +129,9 @@ spec:
           export `}}{{ $actualEnvVar }}{{`="{{ .Data.data.`}}{{ $key }}{{` }}"
           {{- end -}}`}}
         {{- end }}
-        {{- if .Values.vault.server.annotations }}
-        {{- toYaml .Values.vault.server.annotations | nindent 8 }}
+        {{- $mergedAnnotations := include "orkes-conductor.vault.server.getMergedAnnotations" . | fromYaml -}}
+        {{- if $mergedAnnotations }}
+        {{- toYaml $mergedAnnotations | nindent 8 }}
         {{- end }}
         {{- end }}
       labels:
@@ -141,8 +157,9 @@ spec:
               value: {{ .Values.azureKeyVaultName | quote }}
             {{- end }}
             #### Redis ####
-            {{- if and .Values.vault.enabled .Values.vault.server.enabled }}
-            {{- if not (hasKey .Values.vault.server.envSecrets "REDIS_HOSTS") }}
+            {{- $vaultServerEnabled := or (and .Values.global.vault.enabled .Values.global.vault.server.enabled) (and .Values.vault.enabled .Values.vault.server.enabled) -}}
+            {{- if $vaultServerEnabled }}
+            {{- if not (include "orkes-conductor.vault.server.hasEnvSecret" (dict "root" . "key" "REDIS_HOSTS")) }}
             - name: conductor.redis.hosts
               value: {{ $redisHosts | quote }}
             {{- end }}
@@ -157,28 +174,28 @@ spec:
                   key: redisHosts
             {{- end }}
             - name: conductor.redis.ssl
-              value: {{ $redisSslEnabled | quote }}
-            {{- if not (and .Values.vault.enabled .Values.vault.server.enabled (hasKey .Values.vault.server.envSecrets "REDIS_LOCK_SERVER_ADDRESS")) }}
+              value: {{ $redisSslEnabledStr | quote }}
+            {{- if not (and $vaultServerEnabled (include "orkes-conductor.vault.server.hasEnvSecret" (dict "root" . "key" "REDIS_LOCK_SERVER_ADDRESS"))) }}
             - name: conductor.redis-lock.serverAddress
               value: {{ $redisLockServerAddress | quote }}
             {{- end }}
             - name: conductor.redis.database
-              value: {{ .Values.redis.dbIndex | quote }}
-            {{- if .Values.redis.password }}
-            {{- if and .Values.vault.enabled .Values.vault.server.enabled }}
-            {{- if not (hasKey .Values.vault.server.envSecrets "REDIS_PASSWORD") }}
+              value: {{ $redisDbIndex | quote }}
+            {{- if $redisPassword }}
+            {{- if $vaultServerEnabled }}
+            {{- if not (include "orkes-conductor.vault.server.hasEnvSecret" (dict "root" . "key" "REDIS_PASSWORD")) }}
             - name: conductor.redis.password
-              value: {{ .Values.redis.password | quote }}
+              value: {{ $redisPassword | quote }}
             {{- end }}
-            {{- if not (hasKey .Values.vault.server.envSecrets "REDIS_LOCK_SERVER_PASSWORD") }}
+            {{- if not (include "orkes-conductor.vault.server.hasEnvSecret" (dict "root" . "key" "REDIS_LOCK_SERVER_PASSWORD")) }}
             - name: conductor.redis-lock.serverPassword
-              value: {{ .Values.redis.password | quote }}
+              value: {{ $redisPassword | quote }}
             {{- end }}
             {{- else if $useCloudSecrets }}
             - name: conductor.redis.password
-              value: {{ .Values.redis.password | quote }}
+              value: {{ $redisPassword | quote }}
             - name: conductor.redis-lock.serverPassword
-              value: {{ .Values.redis.password | quote }}
+              value: {{ $redisPassword | quote }}
             {{- else }}
             - name: conductor.redis.password
               valueFrom:
@@ -198,49 +215,52 @@ spec:
             - name: conductor.queue.type
               value: redis_cluster
             {{- end }}
-            {{- if .Values.redis.username }}
-            {{- if and .Values.vault.enabled .Values.vault.server.enabled (hasKey .Values.vault.server.envSecrets "REDIS_USERNAME") }}
+            {{- if $redisUsername }}
+            {{- if and $vaultServerEnabled (include "orkes-conductor.vault.server.hasEnvSecret" (dict "root" . "key" "REDIS_USERNAME")) }}
             {{- /* REDIS_USERNAME will be injected from Vault */ -}}
             {{- else }}
             - name: conductor.redis.user
-              value: {{ .Values.redis.username | quote }}
+              value: {{ $redisUsername | quote }}
             {{- end }}
             {{- end }}
             #### Postgres ####
             - name: conductor.persistence.type
               value: {{ .Values.conductor.persistence.type | quote }}
-            {{- if and .Values.vault.enabled .Values.vault.server.enabled (hasKey .Values.vault.server.envSecrets "POSTGRES_URL") }}
+            {{- if and $vaultServerEnabled (include "orkes-conductor.vault.server.hasEnvSecret" (dict "root" . "key" "POSTGRES_URL")) }}
             {{- /* POSTGRES_URL will be injected from Vault */ -}}
             {{- else }}
             - name: spring.datasource.url
               value: {{ $postgresUrl | quote }}
             {{- end }}
-            {{- if .Values.postgres.ssl.enabled }}
+            {{- if eq (include "orkes-conductor.postgres.ssl.enabled" .) "true" }}
             - name: spring.datasource.hikari.data-source-properties.ssl
               value: "true"
             - name: spring.datasource.hikari.data-source-properties.sslmode
-              value: {{ .Values.postgres.ssl.mode | quote }}
+              value: {{ include "orkes-conductor.postgres.ssl.mode" . | quote }}
             {{- end }}
-            {{- if .Values.postgres.maxPoolSize }}
+            {{- $postgresMaxPoolSize := include "orkes-conductor.postgres.maxPoolSize" . -}}
+            {{- if $postgresMaxPoolSize }}
             - name: spring.datasource.hikari.maximum-pool-size
-              value: {{ .Values.postgres.maxPoolSize | quote }}
+              value: {{ $postgresMaxPoolSize | quote }}
             {{- end }}
-            {{- if .Values.postgres.minPoolSize }}
+            {{- $postgresMinPoolSize := include "orkes-conductor.postgres.minPoolSize" . -}}
+            {{- if $postgresMinPoolSize }}
             - name: spring.datasource.hikari.minimum-idle
-              value: {{ .Values.postgres.minPoolSize | quote }}
+              value: {{ $postgresMinPoolSize | quote }}
             {{- end }}
-            {{- if .Values.postgres.connectionTimeout }}
+            {{- $postgresConnectionTimeout := include "orkes-conductor.postgres.connectionTimeout" . -}}
+            {{- if $postgresConnectionTimeout }}
             - name: spring.datasource.hikari.connection-timeout
-              value: {{ .Values.postgres.connectionTimeout | quote }}
+              value: {{ $postgresConnectionTimeout | quote }}
             {{- end }}
-            {{- if and .Values.vault.enabled .Values.vault.server.enabled }}
-            {{- if not (hasKey .Values.vault.server.envSecrets "POSTGRES_PASSWORD") }}
+            {{- if $vaultServerEnabled }}
+            {{- if not (include "orkes-conductor.vault.server.hasEnvSecret" (dict "root" . "key" "POSTGRES_PASSWORD")) }}
             - name: spring.datasource.password
-              value: {{ .Values.postgres.password | quote }}
+              value: {{ $postgresPassword | quote }}
             {{- end }}
             {{- else if $useCloudSecrets }}
             - name: spring.datasource.password
-              value: {{ .Values.postgres.password | quote }}
+              value: {{ $postgresPassword | quote }}
             {{- else }}
             - name: spring.datasource.password
               valueFrom:
@@ -248,11 +268,11 @@ spec:
                   name: orkesdeploymentsecrets
                   key: postgresPassword
             {{- end }}
-            {{- if and .Values.vault.enabled .Values.vault.server.enabled (hasKey .Values.vault.server.envSecrets "POSTGRES_USERNAME") }}
+            {{- if and $vaultServerEnabled (include "orkes-conductor.vault.server.hasEnvSecret" (dict "root" . "key" "POSTGRES_USERNAME")) }}
             {{- /* POSTGRES_USERNAME will be injected from Vault */ -}}
             {{- else }}
             - name: spring.datasource.username
-              value: {{ .Values.postgres.username | quote }}
+              value: {{ $postgresUsername | quote }}
             {{- end }}
             {{- if .Values.app.customLogoUrl }}
             - name: conductor.ui.custom.logo
@@ -277,9 +297,9 @@ spec:
             - name: conductor.security.default.defaultUserGroupsOnCreate
               value: {{ .Values.security.defaultUserGroupsOnCreate | quote }}
             - name: conductor.security.default.workers.accessKeyId
-              value: {{ .Values.workersConfig.accessKeyId | quote }}
+              value: {{ include "orkes-conductor.workers.accessKeyId" . | quote }}
             - name: conductor.security.default.workers.accessKeySecret
-              value: {{ .Values.workersConfig.accessKeySecret | quote }}
+              value: {{ include "orkes-conductor.workers.accessKeySecret" . | quote }}
             {{- if .Values.security.jwtExpiry }}
             - name: conductor.security.jwt.exp
               value: {{ .Values.security.jwtExpiry | quote }}
@@ -461,8 +481,8 @@ spec:
             {{- end }}
             {{- end }}
           name: {{ .Chart.Name }}
-          image: "{{ .Values.server.image.repository | default .Values.image.repository }}:{{ .Values.server.image.tag | default .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.server.image.pullPolicy | default .Values.image.pullPolicy }}
+          image: "{{ include "orkes-conductor.server.image.repository" . }}:{{ include "orkes-conductor.server.image.tag" . }}"
+          imagePullPolicy: {{ include "orkes-conductor.server.image.pullPolicy" . }}
           ports:
             - name: liveness-port
               containerPort: {{ .Values.server.livenessPort | default .Values.image.livenessPort }}
@@ -485,8 +505,8 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      serviceAccount: {{ .Values.vault.server.serviceAccount | default "conductor-app" }}
-      serviceAccountName: {{ .Values.vault.server.serviceAccount | default "conductor-app" }}
+      serviceAccount: {{ include "orkes-conductor.vault.server.serviceAccount" . }}
+      serviceAccountName: {{ include "orkes-conductor.vault.server.serviceAccount" . }}
       terminationGracePeriodSeconds: 30
 ---
 apiVersion: apps/v1
@@ -495,7 +515,7 @@ metadata:
   name: {{ include "orkes-conductor-workers.fullname" . }}
 spec:
   progressDeadlineSeconds: 600
-  replicas: {{ .Values.workersConfig.replicaCount }}
+  replicas: {{ $workersReplicas }}
   revisionHistoryLimit: 10
   selector:
     matchLabels:
@@ -511,12 +531,14 @@ spec:
         prometheus.io/path: /actuator/prometheus
         prometheus.io/port: "8085"
         prometheus.io/scrape: "true"
-        {{- if and .Values.vault.enabled .Values.vault.workers.enabled }}
+        {{- $vaultWorkersEnabled := or (and .Values.global.vault.enabled .Values.global.vault.workers.enabled) (and .Values.vault.enabled .Values.vault.workers.enabled) -}}
+        {{- if $vaultWorkersEnabled }}
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/agent-inject-status: "update"
-        vault.hashicorp.com/role: {{ .Values.vault.workers.role | quote }}
+        vault.hashicorp.com/role: {{ include "orkes-conductor.vault.workers.role" . | quote }}
         vault.hashicorp.com/agent-pre-populate-only: "false"
-        {{- range $envVar, $secretPath := .Values.vault.workers.envSecrets }}
+        {{- $mergedWorkersEnvSecrets := include "orkes-conductor.vault.workers.getMergedEnvSecrets" . | fromYaml -}}
+        {{- range $envVar, $secretPath := $mergedWorkersEnvSecrets }}
         {{- $parts := splitList "#" $secretPath }}
         {{- $path := index $parts 0 }}
         {{- $key := index $parts 1 }}
@@ -534,8 +556,9 @@ spec:
           export `}}{{ $actualEnvVar }}{{`="{{ .Data.data.`}}{{ $key }}{{` }}"
           {{- end -}}`}}
         {{- end }}
-        {{- if .Values.vault.workers.annotations }}
-        {{- toYaml .Values.vault.workers.annotations | nindent 8 }}
+        {{- $mergedWorkersAnnotations := include "orkes-conductor.vault.workers.getMergedAnnotations" . | fromYaml -}}
+        {{- if $mergedWorkersAnnotations }}
+        {{- toYaml $mergedWorkersAnnotations | nindent 8 }}
         {{- end }}
         {{- end }}
       labels:
@@ -572,20 +595,21 @@ spec:
             - name: conductor.secrets.type
               value: {{ $secretsType | quote }}
             {{- if $securityEnabled }}
-            {{- if and .Values.vault.enabled .Values.vault.workers.enabled (hasKey .Values.vault.workers.envSecrets "ACCESS_KEY_ID") }}
+            {{- $vaultWorkersEnabled := or (and .Values.global.vault.enabled .Values.global.vault.workers.enabled) (and .Values.vault.enabled .Values.vault.workers.enabled) -}}
+            {{- if and $vaultWorkersEnabled (include "orkes-conductor.vault.workers.hasEnvSecret" (dict "root" . "key" "ACCESS_KEY_ID")) }}
             {{- /* ACCESS_KEY_ID will be injected from Vault */ -}}
             {{- else }}
             - name: conductor.security.client.key-id
-              value: {{ .Values.workersConfig.accessKeyId | quote }}
+              value: {{ include "orkes-conductor.workers.accessKeyId" . | quote }}
             {{- end }}
-            {{- if and .Values.vault.enabled .Values.vault.workers.enabled (hasKey .Values.vault.workers.envSecrets "ACCESS_KEY_SECRET") }}
+            {{- if and $vaultWorkersEnabled (include "orkes-conductor.vault.workers.hasEnvSecret" (dict "root" . "key" "ACCESS_KEY_SECRET")) }}
             {{- /* ACCESS_KEY_SECRET will be injected from Vault */ -}}
             {{- else }}
             - name: conductor.security.client.secret
-              value: {{ .Values.workersConfig.accessKeySecret | quote }}
+              value: {{ include "orkes-conductor.workers.accessKeySecret" . | quote }}
             {{- end }}
             {{- if .Values.security.jwtExpiry }}
-            {{- if and .Values.vault.enabled .Values.vault.workers.enabled (hasKey .Values.vault.workers.envSecrets "JWT_REFRESH_INTERVAL") }}
+            {{- if and $vaultWorkersEnabled (include "orkes-conductor.vault.workers.hasEnvSecret" (dict "root" . "key" "JWT_REFRESH_INTERVAL")) }}
             {{- /* JWT_REFRESH_INTERVAL will be injected from Vault */ -}}
             {{- else }}
             - name: conductor.security.token.refresh.interval
@@ -603,8 +627,8 @@ spec:
               value: {{ $value | quote }}
             {{- end }}
             {{- end }}
-          image: "{{ .Values.workers.image.repository | default .Values.workerImage.repository }}:{{ .Values.workers.image.tag | default .Values.workerImage.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.workers.image.pullPolicy | default .Values.image.pullPolicy }}
+          image: "{{ include "orkes-conductor.workers.image.repository" . }}:{{ include "orkes-conductor.workers.image.tag" . }}"
+          imagePullPolicy: {{ include "orkes-conductor.workers.image.pullPolicy" . }}
           {{- if $enableCustomTrustStore }}
           volumeMounts:
             - name: custom-truststore-vol
@@ -636,6 +660,6 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      serviceAccount: {{ .Values.vault.workers.serviceAccount | default "conductor-workers-app" }}
-      serviceAccountName: {{ .Values.vault.workers.serviceAccount | default "conductor-workers-app" }}
+      serviceAccount: {{ include "orkes-conductor.vault.workers.serviceAccount" . }}
+      serviceAccountName: {{ include "orkes-conductor.vault.workers.serviceAccount" . }}
       terminationGracePeriodSeconds: 30

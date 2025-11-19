@@ -1,0 +1,210 @@
+# Example configuration using NEW global structure
+# This demonstrates the new Camunda-8-style values organization
+
+global:
+  image:
+    tag: "5.2.42"
+    pullPolicy: IfNotPresent
+
+  labels:
+    app: orkes-conductor
+    environment: staging
+
+  redis:
+    enabled: true
+    external: true
+    host: "redis.default.svc.cluster.local"
+    port: 6379
+    ssl: true
+    dbIndex: 0
+    zoneSuffix: us-east-1c
+    auth:
+      username: ""
+      password: "test-redis-password"
+    connection:
+      maxConnections: 100
+      minIdleConnections: 10
+      timeout: 10000
+
+  postgres:
+    enabled: true
+    external: true
+    host: "postgres.default.svc.cluster.local"
+    port: 5432
+    database: "conductor"
+    auth:
+      username: "conductor"
+      password: "test-postgres-password"
+    ssl:
+      enabled: true
+      mode: "require"
+    connection:
+      maxPoolSize: 50
+      minPoolSize: 10
+      timeout: 30000
+
+  vault:
+    enabled: true
+    server:
+      enabled: true
+      role: "conductor-server"
+      serviceAccount: "conductor-app"
+      annotations:
+        vault.hashicorp.com/agent-limits-cpu: "500m"
+        vault.hashicorp.com/agent-limits-mem: "256Mi"
+      envSecrets:
+        POSTGRES_PASSWORD: "secret/data/conductor/postgres#password"
+        POSTGRES_USERNAME: "secret/data/conductor/postgres#username"
+        REDIS_PASSWORD: "secret/data/conductor/redis#password"
+        REDIS_LOCK_SERVER_PASSWORD: "secret/data/conductor/redis#password"
+        JWT_SECRET: "secret/data/conductor/security#jwtSecret"
+    workers:
+      enabled: true
+      role: "conductor-workers"
+      serviceAccount: "conductor-workers-app"
+      annotations:
+        vault.hashicorp.com/agent-limits-cpu: "250m"
+        vault.hashicorp.com/agent-limits-mem: "128Mi"
+      envSecrets:
+        ACCESS_KEY_ID: "secret/data/conductor/workers#keyId"
+        ACCESS_KEY_SECRET: "secret/data/conductor/workers#secret"
+
+server:
+  enabled: true
+  name: "conductor-server"
+  replicas: 3
+
+  image:
+    repository: orkesio/orkes-conductor-server
+
+  service:
+    type: ClusterIP
+    port: 5000
+    appPort: 8080
+    grpcPort: 8090
+
+  configuration:
+    env: aws
+    s3Region: "us-east-1"
+    springProfilesActive: "logrotate,postgres"
+    jvmSettings: "-Xms1500M -Xmx2500M"
+
+    workflow:
+      sweepBatchSize: "20"
+      sweeperThreadCount: "20"
+      executionLockEnabled: "true"
+
+      introspection:
+        enabled: false
+
+    archive:
+      storeType: "postgres"
+
+    cache:
+      workflowDefinition:
+        refreshIntervalInSeconds: 0
+        maxSize: 1000
+      taskDefinition:
+        refreshIntervalInSeconds: 60
+        maxSize: 1000
+
+    limits:
+      maxWorkflowSizeInMiB: "20"
+      maxTaskSizeInKiB: "200"
+
+    features:
+      apiRateLimiterEnabled: "true"
+      humanTasksEnabled: "false"
+      apiOrchestrationEnabled: "false"
+      grpcServerEnabled: "false"
+
+  resources:
+    requests:
+      cpu: "2"
+      memory: "2Gi"
+    limits:
+      cpu: "3"
+      memory: "3Gi"
+
+  serviceAccount:
+    enabled: true
+    name: "conductor-app"
+    automountServiceAccountToken: false
+
+  podSecurityContext:
+    runAsNonRoot: true
+    fsGroup: 1001
+    seccompProfile:
+      type: RuntimeDefault
+
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    privileged: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1001
+    seccompProfile:
+      type: RuntimeDefault
+
+workers:
+  enabled: true
+  name: "conductor-workers"
+  replicas: 2
+
+  image:
+    repository: orkesio/orkes-conductor-workers
+
+  configuration:
+    clusterName: "orkes-conductor"
+    springProfilesActive: "logrotate"
+    jvmSettings: "-Xms750M -Xmx1500M"
+    blockIps: "127.0.0.1"
+
+  auth:
+    accessKeyId: "conductor-worker"
+    # Secret will be injected by Vault
+    accessKeySecret: ""
+
+  resources:
+    requests:
+      cpu: "1"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+
+  serviceAccount:
+    enabled: true
+    name: "conductor-workers-app"
+    automountServiceAccountToken: false
+
+  podSecurityContext:
+    runAsNonRoot: true
+    fsGroup: 1001
+    seccompProfile:
+      type: RuntimeDefault
+
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    privileged: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1001
+    seccompProfile:
+      type: RuntimeDefault
+
+security:
+  enabled: true
+  allowedOrigins: "*"
+  defaultUserEmail: "admin@example.com"
+  defaultUserName: "Admin User"
+  jwtExpiry: 3600
+  jwt:
+    # Secret will be injected by Vault
+    secret: ""
+
+secrets:
+  type: memory
+
+imageCredentials:
+  password: ""
