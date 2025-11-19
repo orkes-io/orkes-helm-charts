@@ -1,0 +1,151 @@
+# Example configuration for custom registry using global structure
+# Demonstrates multiple ways to specify custom registry images
+
+## Pattern 1: Global registry for all images (recommended for single registry)
+global:
+  image:
+    registry: "myregistry.example.com"
+    tag: "5.2.42"
+    pullPolicy: Always
+    pullSecrets:
+      - name: my-registry-secret
+
+server:
+  # Uses global.image.registry + server.image.repository
+  image:
+    repository: "myorg/orkes-conductor-server"
+  replicas: 3
+
+workers:
+  # Uses global.image.registry + workers.image.repository
+  image:
+    repository: "myorg/orkes-conductor-workers"
+  replicas: 2
+
+# Result:
+# Server: myregistry.example.com/myorg/orkes-conductor-server:5.2.42
+# Workers: myregistry.example.com/myorg/orkes-conductor-workers:5.2.42
+
+---
+## Pattern 2: Different registries for server and workers
+# global:
+#   image:
+#     tag: "5.2.42"
+#
+# server:
+#   image:
+#     registry: "gcr.io/my-project"
+#     repository: "orkes-conductor-server"
+#
+# workers:
+#   image:
+#     registry: "quay.io/myorg"
+#     repository: "orkes-conductor-workers"
+#
+# Result:
+# Server: gcr.io/my-project/orkes-conductor-server:5.2.42
+# Workers: quay.io/myorg/orkes-conductor-workers:5.2.42
+
+---
+## Pattern 3: Full image name in repository field
+# global:
+#   image:
+#     tag: "5.2.42"
+#
+# server:
+#   image:
+#     repository: "myregistry.example.com/myorg/orkes-conductor-server"
+#
+# workers:
+#   image:
+#     repository: "myregistry.example.com/myorg/orkes-conductor-workers"
+#
+# Result:
+# Server: myregistry.example.com/myorg/orkes-conductor-server:5.2.42
+# Workers: myregistry.example.com/myorg/orkes-conductor-workers:5.2.42
+
+---
+## Pattern 4: Azure Container Registry (ACR)
+# global:
+#   image:
+#     registry: "myacr.azurecr.io"
+#     tag: "latest"
+#     pullSecrets:
+#       - name: acr-credentials
+#
+# server:
+#   image:
+#     repository: "conductor/server"
+#
+# workers:
+#   image:
+#     repository: "conductor/workers"
+#
+# Result:
+# Server: myacr.azurecr.io/conductor/server:latest
+# Workers: myacr.azurecr.io/conductor/workers:latest
+
+---
+## Pattern 5: Google Container Registry (GCR)
+# global:
+#   image:
+#     registry: "gcr.io/my-gcp-project"
+#     tag: "v1.0.0"
+#     pullSecrets:
+#       - name: gcr-json-key
+#
+# server:
+#   image:
+#     repository: "orkes/conductor-server"
+#
+# workers:
+#   image:
+#     repository: "orkes/conductor-workers"
+#
+# Result:
+# Server: gcr.io/my-gcp-project/orkes/conductor-server:v1.0.0
+# Workers: gcr.io/my-gcp-project/orkes/conductor-workers:v1.0.0
+
+---
+## Pattern 6: JFrog Artifactory
+# global:
+#   image:
+#     registry: "mycompany.jfrog.io/docker-local"
+#     tag: "production"
+#
+# server:
+#   image:
+#     repository: "conductor-server"
+#
+# workers:
+#   image:
+#     repository: "conductor-workers"
+#
+# Result:
+# Server: mycompany.jfrog.io/docker-local/conductor-server:production
+# Workers: mycompany.jfrog.io/docker-local/conductor-workers:production
+
+# Database configuration
+global:
+  postgres:
+    host: "postgres.default.svc.cluster.local"
+    port: 5432
+    database: "conductor"
+    auth:
+      username: "conductor"
+      password: "test-password"
+
+  redis:
+    host: "redis.default.svc.cluster.local"
+    port: 6379
+    auth:
+      password: "test-redis-password"
+
+security:
+  enabled: false
+
+secrets:
+  type: memory
+
+imageCredentials:
+  password: ""

@@ -481,7 +481,7 @@ spec:
             {{- end }}
             {{- end }}
           name: {{ .Chart.Name }}
-          image: "{{ include "orkes-conductor.server.image.repository" . }}:{{ include "orkes-conductor.server.image.tag" . }}"
+          image: "{{ include "orkes-conductor.server.image" . }}"
           imagePullPolicy: {{ include "orkes-conductor.server.image.pullPolicy" . }}
           ports:
             - name: liveness-port
@@ -627,7 +627,7 @@ spec:
               value: {{ $value | quote }}
             {{- end }}
             {{- end }}
-          image: "{{ include "orkes-conductor.workers.image.repository" . }}:{{ include "orkes-conductor.workers.image.tag" . }}"
+          image: "{{ include "orkes-conductor.workers.image" . }}"
           imagePullPolicy: {{ include "orkes-conductor.workers.image.pullPolicy" . }}
           {{- if $enableCustomTrustStore }}
           volumeMounts:

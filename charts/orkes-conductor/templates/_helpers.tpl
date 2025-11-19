@@ -260,12 +260,31 @@ Helper to get server configuration with fallback
 {{- .Values.server.image.repository | default .Values.image.repository -}}
 {{- end -}}
 
+{{- define "orkes-conductor.server.image.registry" -}}
+{{- .Values.server.image.registry | default .Values.global.image.registry -}}
+{{- end -}}
+
 {{- define "orkes-conductor.server.image.tag" -}}
 {{- .Values.server.image.tag | default .Values.global.image.tag | default .Chart.AppVersion -}}
 {{- end -}}
 
 {{- define "orkes-conductor.server.image.pullPolicy" -}}
 {{- .Values.server.image.pullPolicy | default .Values.global.image.pullPolicy | default .Values.image.pullPolicy | default "IfNotPresent" -}}
+{{- end -}}
+
+{{/*
+Generate full server image name (registry/repository:tag)
+Supports both separate registry+repository and full image name patterns
+*/}}
+{{- define "orkes-conductor.server.image" -}}
+{{- $registry := include "orkes-conductor.server.image.registry" . -}}
+{{- $repository := include "orkes-conductor.server.image.repository" . -}}
+{{- $tag := include "orkes-conductor.server.image.tag" . -}}
+{{- if $registry -}}
+{{- printf "%s/%s:%s" $registry $repository $tag -}}
+{{- else -}}
+{{- printf "%s:%s" $repository $tag -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -279,12 +298,31 @@ Helper to get workers configuration with fallback
 {{- .Values.workers.image.repository | default .Values.workerImage.repository -}}
 {{- end -}}
 
+{{- define "orkes-conductor.workers.image.registry" -}}
+{{- .Values.workers.image.registry | default .Values.global.image.registry -}}
+{{- end -}}
+
 {{- define "orkes-conductor.workers.image.tag" -}}
 {{- .Values.workers.image.tag | default .Values.global.image.tag | default .Chart.AppVersion -}}
 {{- end -}}
 
 {{- define "orkes-conductor.workers.image.pullPolicy" -}}
 {{- .Values.workers.image.pullPolicy | default .Values.global.image.pullPolicy | default .Values.workerImage.pullPolicy | default "IfNotPresent" -}}
+{{- end -}}
+
+{{/*
+Generate full workers image name (registry/repository:tag)
+Supports both separate registry+repository and full image name patterns
+*/}}
+{{- define "orkes-conductor.workers.image" -}}
+{{- $registry := include "orkes-conductor.workers.image.registry" . -}}
+{{- $repository := include "orkes-conductor.workers.image.repository" . -}}
+{{- $tag := include "orkes-conductor.workers.image.tag" . -}}
+{{- if $registry -}}
+{{- printf "%s/%s:%s" $registry $repository $tag -}}
+{{- else -}}
+{{- printf "%s:%s" $repository $tag -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "orkes-conductor.workers.accessKeyId" -}}

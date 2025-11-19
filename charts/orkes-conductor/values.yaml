@@ -12,9 +12,13 @@ global:
     app: orkes-conductor
 
   ## @extra global.image Global image configuration
+  ## When set, these values apply to both server and workers unless overridden
+  ## Common registries: docker.io, gcr.io, quay.io, registry.example.com
   image:
     ## @param global.image.registry Global container image registry
-    registry: docker.io
+    ## Example: "myregistry.example.com" or "gcr.io/my-project"
+    ## Leave empty for default DockerHub
+    registry: ""
     ## @param global.image.tag Global image tag (defaults to Chart.AppVersion)
     tag: ""
     ## @param global.image.pullPolicy Global image pull policy
@@ -231,10 +235,25 @@ server:
   replicas: 3
 
   ## @extra server.image Server image configuration
+  ## Supports multiple patterns:
+  ## 1. Separate registry and repository (recommended for custom registries):
+  ##    registry: "myregistry.example.com"
+  ##    repository: "myorg/orkes-conductor-server"
+  ##    Result: myregistry.example.com/myorg/orkes-conductor-server:tag
+  ##
+  ## 2. Full image name in repository (alternative):
+  ##    registry: ""
+  ##    repository: "myregistry.example.com/myorg/orkes-conductor-server"
+  ##    Result: myregistry.example.com/myorg/orkes-conductor-server:tag
+  ##
+  ## 3. Default DockerHub:
+  ##    registry: ""
+  ##    repository: "orkesio/orkes-conductor-server"
+  ##    Result: orkesio/orkes-conductor-server:tag
   image:
-    ## @param server.image.registry Server image registry
+    ## @param server.image.registry Server image registry (e.g., myregistry.example.com, gcr.io, quay.io)
     registry: ""  # Uses global.image.registry if not set
-    ## @param server.image.repository Server image repository
+    ## @param server.image.repository Server image repository (can include registry as prefix)
     repository: orkesio/orkes-conductor-server
     ## @param server.image.tag Server image tag (defaults to Chart.AppVersion or global.image.tag)
     tag: ""
@@ -520,10 +539,25 @@ workers:
   replicas: 2
 
   ## @extra workers.image Workers image configuration
+  ## Supports multiple patterns:
+  ## 1. Separate registry and repository (recommended for custom registries):
+  ##    registry: "myregistry.example.com"
+  ##    repository: "myorg/orkes-conductor-workers"
+  ##    Result: myregistry.example.com/myorg/orkes-conductor-workers:tag
+  ##
+  ## 2. Full image name in repository (alternative):
+  ##    registry: ""
+  ##    repository: "myregistry.example.com/myorg/orkes-conductor-workers"
+  ##    Result: myregistry.example.com/myorg/orkes-conductor-workers:tag
+  ##
+  ## 3. Default DockerHub:
+  ##    registry: ""
+  ##    repository: "orkesio/orkes-conductor-workers"
+  ##    Result: orkesio/orkes-conductor-workers:tag
   image:
-    ## @param workers.image.registry Workers image registry
+    ## @param workers.image.registry Workers image registry (e.g., myregistry.example.com, gcr.io, quay.io)
     registry: ""  # Uses global.image.registry if not set
-    ## @param workers.image.repository Workers image repository
+    ## @param workers.image.repository Workers image repository (can include registry as prefix)
     repository: orkesio/orkes-conductor-workers
     ## @param workers.image.tag Workers image tag (defaults to Chart.AppVersion or global.image.tag)
     tag: ""
