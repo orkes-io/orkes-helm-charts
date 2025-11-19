@@ -3,6 +3,26 @@ service:
   appPort: 8080
   grpcPort: 8090
 
+# Naming configuration for server and workers
+nameOverride: ""
+fullnameOverride: ""
+
+server:
+  name: "orkes-conductor-server"
+  image:
+    repository: orkesio/orkes-conductor-server
+    tag: ""  # defaults to Chart.AppVersion
+    pullPolicy: IfNotPresent
+  livenessPort: 5000
+
+workers:
+  name: "orkes-conductor-workers"
+  image:
+    repository: orkesio/orkes-conductor-workers
+    tag: ""  # defaults to Chart.AppVersion
+    pullPolicy: IfNotPresent
+
+# Legacy image configurations (deprecated, use server.image and workers.image instead)
 image:
   repository: orkesio/orkes-conductor-server
   pullPolicy: IfNotPresent
@@ -76,6 +96,116 @@ app:
 # Read more here: https://aka.ms/azsdk/java/identity/environmentcredential/troubleshoot
 azureKeyVaultName:
 
+# HashiCorp Vault configuration
+vault:
+  enabled: false
+  # Vault agent injector annotations for the server
+  server:
+    # Enable Vault injection for server pods
+    enabled: false
+    # Vault role to use for authentication
+    role: ""
+    # Path to Vault secrets
+    path: ""
+    # Template for individual secret keys (will be applied per env var)
+    # Example: "secret/data/conductor/server"
+    secretPath: ""
+    # Service account to use for Vault authentication
+    serviceAccount: "conductor-app"
+    # Additional Vault annotations
+    annotations: {}
+    # Individual environment variable mappings to Vault secrets
+    # Format: ENV_VAR_NAME: "path/to/secret#key"
+    #
+    # Supported environment variables for database and Redis:
+    #
+    # Database secrets:
+    #   POSTGRES_PASSWORD: Maps to spring.datasource.password
+    #   POSTGRES_USERNAME: Maps to spring.datasource.username
+    #   POSTGRES_URL: Maps to spring.datasource.url (if you want to inject the full JDBC URL from Vault)
+    #     Note: If you inject POSTGRES_URL, you should include host, port, and database in the URL
+    #     Example: jdbc:postgresql://myhost:5432/conductor?sslmode=require
+    #     If not using POSTGRES_URL from Vault, set postgres.host, postgres.port, and postgres.database in values
+    #
+    # Redis secrets:
+    #   REDIS_PASSWORD: Maps to conductor.redis.password
+    #   REDIS_LOCK_SERVER_PASSWORD: Maps to conductor.redis-lock.serverPassword
+    #   REDIS_USERNAME: Maps to conductor.redis.user
+    #   REDIS_HOSTS: Maps to conductor.redis.hosts (format: host:port:zone or host:port:zone:password)
+    #     Note: If you inject REDIS_HOSTS, include the full connection string with host and port
+    #     Example: myredis.example.com:6380:us-east-1a
+    #     If not using REDIS_HOSTS from Vault, set redis.host and redis.port separately in values
+    #   REDIS_LOCK_SERVER_ADDRESS: Maps to conductor.redis-lock.serverAddress (format: redis://host:port or rediss://host:port for SSL)
+    #
+    # Security secrets:
+    #   JWT_SECRET: Maps to conductor.security.jwt.secret
+    #
+    # Port Configuration:
+    #   - PostgreSQL port can be set separately via postgres.port in values.yaml (default: 5432)
+    #   - Redis port can be set separately via redis.port in values.yaml (default: 6379)
+    #   - Or inject the complete connection URL/string (POSTGRES_URL or REDIS_HOSTS) from Vault
+    #
+    # Example configurations:
+    #
+    # Option 1: Basic secrets only (recommended)
+    # Set host, port, database in values.yaml; inject only credentials from Vault
+    # envSecrets:
+    #   POSTGRES_PASSWORD: "secret/data/conductor/postgres#password"
+    #   POSTGRES_USERNAME: "secret/data/conductor/postgres#username"
+    #   REDIS_PASSWORD: "secret/data/conductor/redis#password"
+    #   REDIS_LOCK_SERVER_PASSWORD: "secret/data/conductor/redis#password"
+    #   JWT_SECRET: "secret/data/conductor/security#jwtSecret"
+    #
+    # Option 2: Complete connection strings from Vault
+    # Inject full JDBC URL and Redis connection strings
+    # envSecrets:
+    #   POSTGRES_URL: "secret/data/conductor/postgres#jdbcUrl"
+    #   POSTGRES_PASSWORD: "secret/data/conductor/postgres#password"
+    #   POSTGRES_USERNAME: "secret/data/conductor/postgres#username"
+    #   REDIS_HOSTS: "secret/data/conductor/redis#hosts"
+    #   REDIS_PASSWORD: "secret/data/conductor/redis#password"
+    #   REDIS_LOCK_SERVER_ADDRESS: "secret/data/conductor/redis#lockServerAddress"
+    #   REDIS_LOCK_SERVER_PASSWORD: "secret/data/conductor/redis#password"
+    #   JWT_SECRET: "secret/data/conductor/security#jwtSecret"
+    #
+    # Option 3: With Redis ACL username
+    # envSecrets:
+    #   POSTGRES_PASSWORD: "secret/data/conductor/postgres#password"
+    #   POSTGRES_USERNAME: "secret/data/conductor/postgres#username"
+    #   REDIS_PASSWORD: "secret/data/conductor/redis#password"
+    #   REDIS_LOCK_SERVER_PASSWORD: "secret/data/conductor/redis#password"
+    #   REDIS_USERNAME: "secret/data/conductor/redis#username"
+    #   JWT_SECRET: "secret/data/conductor/security#jwtSecret"
+    envSecrets: {}
+  # Vault agent injector annotations for workers
+  workers:
+    # Enable Vault injection for worker pods
+    enabled: false
+    # Vault role to use for authentication
+    role: ""
+    # Path to Vault secrets
+    path: ""
+    # Template for individual secret keys
+    secretPath: ""
+    # Service account to use for Vault authentication
+    serviceAccount: "conductor-workers-app"
+    # Additional Vault annotations
+    annotations: {}
+    # Individual environment variable mappings to Vault secrets
+    # Format: ENV_VAR_NAME: "path/to/secret#key"
+    #
+    # Supported environment variables for workers:
+    # Security credentials:
+    #   ACCESS_KEY_ID: Maps to conductor.security.client.key-id
+    #   ACCESS_KEY_SECRET: Maps to conductor.security.client.secret
+    #   JWT_REFRESH_INTERVAL: Maps to conductor.security.token.refresh.interval
+    #
+    # Example:
+    # envSecrets:
+    #   ACCESS_KEY_ID: "secret/data/conductor/workers#keyId"
+    #   ACCESS_KEY_SECRET: "secret/data/conductor/workers#secret"
+    envSecrets: {}
+
 secrets:
   type: memory
   ssmPath: ""
@@ -84,7 +214,7 @@ secrets:
 serviceAccount:
   annotations: {}
 
-workers:
+workersConfig:
   env:
     ORKES_CLUSTER_NAME: "orkes-conductor"
   replicaCount: 2
@@ -101,18 +231,39 @@ workers:
     memoryRequests: "1Gi"
 
 redis:
+  host: ""
   port: 6379
   ssl: false
-  host: ""
+  sslEnabled: false  # Alternative to ssl
   password: ""
+  username: ""
   dbIndex: 0
   clusterMode: false
   zoneSuffix: us-east-1c
+  # Connection pool settings (optional)
+  maxConnections: 100
+  minIdleConnections: 10
+  connectionTimeout: 10000
 
 postgres:
+  host: ""
+  port: 5432
+  database: "conductor"
   username: ""
   password: ""
+  # Full JDBC URL (takes precedence if specified)
   url: ""
+  # SSL Configuration
+  ssl:
+    enabled: false
+    mode: "require"  # disable, allow, prefer, require, verify-ca, verify-full
+    cert: ""
+    key: ""
+    rootCert: ""
+  # Connection pool settings (optional)
+  maxPoolSize: 20
+  minPoolSize: 5
+  connectionTimeout: 30000
 
 conductor:
   env: {}
@@ -127,6 +278,27 @@ imageCredentials:
   username: orkesdocker
   email: dockeracess@orkes.io
   password: ""
+
+# Custom image pull secrets (for external registries)
+# If you want to use a pre-existing secret, set existingImagePullSecret
+# If you want to create a new secret, configure customImagePullSecrets
+existingImagePullSecret: ""
+
+customImagePullSecrets:
+  enabled: false
+  # Name of the secret to create
+  name: "custom-registry-secret"
+  # List of registry credentials
+  registries:
+    - registry: "my-registry.example.com"
+      username: ""
+      password: ""
+      email: ""
+    # You can add multiple registries
+    # - registry: "another-registry.example.com"
+    #   username: ""
+    #   password: ""
+    #   email: ""
 
 # Set this to false if you will be setting environment variables in other ways
 useOrkesDeploymentSecrets: true

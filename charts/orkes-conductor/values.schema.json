@@ -7,7 +7,7 @@
     "workerImage",
     "app",
     "secrets",
-    "workers",
+    "workersConfig",
     "imageCredentials",
     "security"
   ],
@@ -86,7 +86,36 @@
         "annotations": { "type": "object" }
       }
     },
+    "server": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": { "type": "string" },
+            "tag": { "type": "string" },
+            "pullPolicy": { "type": "string" }
+          }
+        },
+        "livenessPort": { "type": "integer" }
+      }
+    },
     "workers": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": { "type": "string" },
+            "tag": { "type": "string" },
+            "pullPolicy": { "type": "string" }
+          }
+        }
+      }
+    },
+    "workersConfig": {
       "type": "object",
       "required": [
         "replicaCount"
@@ -94,37 +123,115 @@
       "properties": {
         "replicaCount": {
           "type": "integer"
+        },
+        "accessKeyId": { "type": ["string", "null"] },
+        "accessKeySecret": { "type": ["string", "null"] },
+        "springProfilesActive": { "type": "string" },
+        "blockIps": { "type": "string" },
+        "jvmSettings": { "type": "string" },
+        "env": { "type": "object" },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "cpuLimit": { "type": "string" },
+            "memoryLimit": { "type": "string" },
+            "cpuRequests": { "type": "string" },
+            "memoryRequests": { "type": "string" }
+          }
         }
       }
     },
     "redis": {
       "type": "object",
       "properties": {
-        "host": {
-          "type": "string"
-        },
-        "port": {
-          "type": ["integer", "string"]
-        },
-        "ssl": {
-          "type": "boolean"
-        }
+        "host": { "type": "string" },
+        "port": { "type": ["integer", "string"] },
+        "ssl": { "type": "boolean" },
+        "sslEnabled": { "type": "boolean" },
+        "password": { "type": "string" },
+        "username": { "type": "string" },
+        "dbIndex": { "type": "integer" },
+        "clusterMode": { "type": "boolean" },
+        "zoneSuffix": { "type": "string" },
+        "maxConnections": { "type": "integer" },
+        "minIdleConnections": { "type": "integer" },
+        "connectionTimeout": { "type": "integer" }
       }
     },
     "postgres": {
       "type": "object",
       "properties": {
-        "username": {
-          "type": "string"
+        "host": { "type": "string" },
+        "port": { "type": "integer" },
+        "database": { "type": "string" },
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "url": { "type": "string" },
+        "ssl": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "mode": { "type": "string" },
+            "cert": { "type": "string" },
+            "key": { "type": "string" },
+            "rootCert": { "type": "string" }
+          }
         },
-        "password": {
-          "type": "string"
+        "maxPoolSize": { "type": "integer" },
+        "minPoolSize": { "type": "integer" },
+        "connectionTimeout": { "type": "integer" }
+      }
+    },
+    "vault": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "server": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "role": { "type": "string" },
+            "path": { "type": "string" },
+            "secretPath": { "type": "string" },
+            "serviceAccount": { "type": "string" },
+            "annotations": { "type": "object" },
+            "envSecrets": { "type": "object" }
+          }
         },
-        "url": {
-          "type": "string"
+        "workers": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "role": { "type": "string" },
+            "path": { "type": "string" },
+            "secretPath": { "type": "string" },
+            "serviceAccount": { "type": "string" },
+            "annotations": { "type": "object" },
+            "envSecrets": { "type": "object" }
+          }
         }
       }
     },
+    "customImagePullSecrets": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "name": { "type": "string" },
+        "registries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "registry": { "type": "string" },
+              "username": { "type": "string" },
+              "password": { "type": "string" },
+              "email": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "existingImagePullSecret": { "type": "string" },
     "imageCredentials": {
       "type": "object",
       "required": [

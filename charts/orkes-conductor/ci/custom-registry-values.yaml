@@ -1,0 +1,85 @@
+# Example configuration for using custom image registries
+# This demonstrates pulling images from private registries
+
+# Use existing image pull secret (Option 1)
+# existingImagePullSecret: "my-existing-secret"
+
+# Or create a new image pull secret (Option 2)
+customImagePullSecrets:
+  enabled: true
+  name: "custom-registry-secret"
+  registries:
+    - registry: "registry.example.com"
+      username: "myuser"
+      password: "mypassword"
+      email: "user@example.com"
+
+# Server configuration with custom image
+server:
+  name: "orkes-conductor-server"
+  image:
+    repository: "registry.example.com/orkes/conductor-server"
+    tag: "5.2.42"
+    pullPolicy: IfNotPresent
+  livenessPort: 5000
+
+# Workers configuration with custom image
+workers:
+  name: "orkes-conductor-workers"
+  image:
+    repository: "registry.example.com/orkes/conductor-workers"
+    tag: "5.2.42"
+    pullPolicy: IfNotPresent
+
+# PostgreSQL configuration
+postgres:
+  host: "postgres.default.svc.cluster.local"
+  port: 5432
+  database: "conductor"
+  username: "conductor"
+  password: "conductor_password"
+  url: ""
+
+# Redis configuration
+redis:
+  host: "redis.default.svc.cluster.local"
+  port: 6379
+  ssl: false
+  password: "redis_password"
+  dbIndex: 0
+
+# Application settings
+app:
+  replicaCount: 3
+  env: "aws"
+  s3Region: "us-east-1"
+  springProfilesActive: "logrotate,postgres"
+  archiveStoreType: "postgres"
+  resources:
+    cpuLimit: "3"
+    memoryLimit: "3Gi"
+    cpuRequests: "2"
+    memoryRequests: "2Gi"
+
+# Workers settings
+workersConfig:
+  replicaCount: 2
+  resources:
+    cpuLimit: "2"
+    memoryLimit: "2Gi"
+    cpuRequests: "1"
+    memoryRequests: "1Gi"
+
+# Enable Kubernetes secrets for credentials
+useOrkesDeploymentSecrets: true
+
+# Security disabled for this example
+security:
+  enabled: false
+
+conductor:
+  persistence:
+    type: postgres
+
+secrets:
+  type: memory

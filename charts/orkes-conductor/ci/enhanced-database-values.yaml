@@ -1,0 +1,121 @@
+# Example configuration demonstrating enhanced database features
+# This shows PostgreSQL with SSL and Redis with advanced configuration
+
+# PostgreSQL with SSL and connection pooling
+postgres:
+  # Individual host/port/database configuration
+  host: "postgres.example.com"
+  port: 5432
+  database: "conductor_prod"
+  username: "conductor_user"
+  password: "secure_password"
+
+  # SSL Configuration
+  ssl:
+    enabled: true
+    mode: "require"  # Options: disable, allow, prefer, require, verify-ca, verify-full
+
+  # Connection pool settings (HikariCP)
+  maxPoolSize: 50
+  minPoolSize: 10
+  connectionTimeout: 30000
+
+  # Alternative: You can also specify a complete JDBC URL
+  # url: "jdbc:postgresql://postgres.example.com:5432/conductor?sslmode=require&applicationName=conductor"
+
+# Redis with SSL and advanced configuration
+redis:
+  host: "redis.example.com"
+  port: 6380  # Standard SSL port
+  ssl: true
+  sslEnabled: true  # Alternative flag
+  username: "redis_user"
+  password: "redis_secure_password"
+  dbIndex: 0
+
+  # Cluster mode
+  clusterMode: false
+
+  # Zone suffix for AWS deployments
+  zoneSuffix: "us-east-1a"
+
+  # Connection pool settings
+  maxConnections: 100
+  minIdleConnections: 10
+  connectionTimeout: 10000
+
+# Server configuration
+server:
+  name: "conductor-server"
+  image:
+    repository: orkesio/orkes-conductor-server
+    tag: "5.2.42"
+    pullPolicy: IfNotPresent
+
+# Workers configuration
+workers:
+  name: "conductor-workers"
+  image:
+    repository: orkesio/orkes-conductor-workers
+    tag: "5.2.42"
+    pullPolicy: IfNotPresent
+
+# Application settings
+app:
+  replicaCount: 3
+  env: "aws"
+  s3Region: "us-east-1"
+  springProfilesActive: "logrotate,postgres"
+  archiveStoreType: "postgres"
+
+  # JVM settings
+  jvmSettings: "-Xms2G -Xmx3G -XX:+UseG1GC"
+
+  # Cache settings
+  workflowDefinitionCache:
+    refreshIntervalInSeconds: 60
+    maxSize: 2000
+  taskDefinitionCache:
+    refreshIntervalInSeconds: 60
+    maxSize: 2000
+
+  # Resource limits
+  resources:
+    cpuLimit: "4"
+    memoryLimit: "4Gi"
+    cpuRequests: "2"
+    memoryRequests: "3Gi"
+
+# Workers settings
+workersConfig:
+  replicaCount: 3
+  jvmSettings: "-Xms1G -Xmx2G -XX:+UseG1GC"
+  blockIps: "127.0.0.1,169.254.169.254"
+  resources:
+    cpuLimit: "2"
+    memoryLimit: "2Gi"
+    cpuRequests: "1"
+    memoryRequests: "1Gi"
+
+# Security disabled for simplicity in this example
+security:
+  enabled: false
+
+# Use Kubernetes secrets
+useOrkesDeploymentSecrets: true
+
+conductor:
+  persistence:
+    type: postgres
+  workflow:
+    execution:
+      maxParallelSystemTasks: 2048
+
+secrets:
+  type: memory
+
+# Service configuration
+service:
+  port: 5000
+  appPort: 8080
+  grpcPort: 8090

@@ -1,0 +1,133 @@
+# Example configuration for Vault integration
+# This file demonstrates how to use HashiCorp Vault for secret management
+
+# Enable Vault integration
+vault:
+  enabled: true
+
+  # Server configuration
+  server:
+    enabled: true
+    role: "conductor-server"
+    serviceAccount: "conductor-app"
+    # Map environment variables to Vault secrets
+    # All database and Redis persistence/secret variables are injected from Vault
+    envSecrets:
+      # Database persistence secrets
+      POSTGRES_PASSWORD: "secret/data/conductor/postgres#password"
+      POSTGRES_USERNAME: "secret/data/conductor/postgres#username"
+      # Redis persistence secrets
+      REDIS_PASSWORD: "secret/data/conductor/redis#password"
+      REDIS_LOCK_SERVER_PASSWORD: "secret/data/conductor/redis#password"
+      # Security secrets
+      JWT_SECRET: "secret/data/conductor/jwt#secret"
+    # Additional Vault annotations (optional)
+    annotations:
+      vault.hashicorp.com/agent-limits-cpu: "500m"
+      vault.hashicorp.com/agent-limits-mem: "256Mi"
+      vault.hashicorp.com/agent-requests-cpu: "250m"
+      vault.hashicorp.com/agent-requests-mem: "128Mi"
+
+  # Workers configuration
+  workers:
+    enabled: true
+    role: "conductor-workers"
+    serviceAccount: "conductor-workers-app"
+    envSecrets:
+      # Worker authentication secrets
+      ACCESS_KEY_ID: "secret/data/conductor/workers#keyId"
+      ACCESS_KEY_SECRET: "secret/data/conductor/workers#secret"
+    annotations:
+      vault.hashicorp.com/agent-limits-cpu: "250m"
+      vault.hashicorp.com/agent-limits-mem: "128Mi"
+
+# Custom naming
+server:
+  name: "conductor-server"
+  image:
+    repository: orkesio/orkes-conductor-server
+    tag: "5.2.42"
+    pullPolicy: IfNotPresent
+
+workers:
+  name: "conductor-workers"
+  image:
+    repository: orkesio/orkes-conductor-workers
+    tag: "5.2.42"
+    pullPolicy: IfNotPresent
+
+# PostgreSQL configuration with custom port
+# Note: Port can be set separately and independently
+postgres:
+  host: "postgres.default.svc.cluster.local"
+  port: 5432  # PostgreSQL port - can be customized (default: 5432)
+  database: "conductor"
+  username: "conductor"
+  # Password will be injected by Vault from POSTGRES_PASSWORD
+  password: ""
+  ssl:
+    enabled: true
+    mode: "require"
+  maxPoolSize: 50
+  minPoolSize: 10
+
+# Redis configuration with custom port
+# Note: Port can be set separately and independently
+redis:
+  host: "redis.default.svc.cluster.local"
+  port: 6379  # Redis port - can be customized (default: 6379)
+  ssl: true
+  username: ""
+  # Password will be injected by Vault from REDIS_PASSWORD
+  password: ""
+  dbIndex: 0
+  maxConnections: 100
+
+# Application settings
+app:
+  replicaCount: 3
+  env: "aws"
+  s3Region: "us-east-1"
+  springProfilesActive: "logrotate,postgres"
+  archiveStoreType: "postgres"
+  resources:
+    cpuLimit: "3"
+    memoryLimit: "3Gi"
+    cpuRequests: "2"
+    memoryRequests: "2Gi"
+
+# Workers settings
+workersConfig:
+  replicaCount: 2
+  accessKeyId: "conductor-worker"
+  # Secret will be injected by Vault
+  accessKeySecret: ""
+  resources:
+    cpuLimit: "2"
+    memoryLimit: "2Gi"
+    cpuRequests: "1"
+    memoryRequests: "1Gi"
+
+# Security configuration
+security:
+  enabled: true
+  allowedOrigins: "*"
+  overwriteDefault: true
+  createUserOnAuthentication: false
+  jwtExpiry: 3600
+  defaultUserEmail: "admin@example.com"
+  defaultUserName: "Admin User"
+  jwt:
+    # Secret will be injected by Vault
+    secret: ""
+
+# Disable legacy secret management since we're using Vault
+useOrkesDeploymentSecrets: false
+
+# Secret type - use memory since Vault handles secrets
+secrets:
+  type: memory
+
+conductor:
+  persistence:
+    type: postgres
