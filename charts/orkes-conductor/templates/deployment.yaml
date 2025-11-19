@@ -38,7 +38,7 @@ spec:
     spec:
       containers:
         - name: orkes-conductor
-          image: "orkesio/orkes-conductor-server:{{ default .Chart.AppVersion (tpl (default "" .Values.image.tag) .) }}"
+          image: "{{ default "orkesio/orkes-conductor-server" .Values.image.conductorImageName }}:{{ default .Chart.AppVersion (tpl (default "" .Values.image.tag) .) }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: JVM_MEMORY_SETTINGS # In theory, we could put these in JAVA_TOOL_OPTIONS, but Conductor's startup
@@ -132,7 +132,7 @@ spec:
     spec:
       containers:
         - name: orkes-workers
-          image: "orkesio/orkes-conductor-workers:{{ default .Chart.AppVersion (tpl (default "" .Values.image.tag) .) }}"
+          image: "{{ default "orkesio/orkes-conductor-workers" .Values.image.workersImageName }}:{{ default .Chart.AppVersion (tpl (default "" .Values.image.tag) .) }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: JVM_MEMORY_SETTINGS # See note in the conductor deployment above about why we set this variable.
