@@ -33,8 +33,14 @@ spec:
         app.kubernetes.io/name: orkes-conductor
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: app
+        {{- with .Values.conductor.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       annotations:
         orkes.io/checksum-conductor-properties: {{ include "orkes.propertiesContent" .Values.conductor.properties | sha256sum }}
+        {{- with .Values.conductor.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       containers:
         - name: orkes-conductor
@@ -127,8 +133,14 @@ spec:
         app.kubernetes.io/name: orkes-conductor
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: workers
+        {{- with .Values.workers.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       annotations:
         orkes.io/checksum-workers-properties: {{ include "orkes.propertiesContent" .Values.workers.properties | sha256sum }}
+        {{- with .Values.workers.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       containers:
         - name: orkes-workers

@@ -26,6 +26,10 @@ conductor:
   maxMemoryPercentage: 70.0
   serviceAccount:
     annotations: {}
+  # Labels to add to the Conductor server pods.
+  podLabels: {}
+  # Annotations to add to the Conductor server pods.
+  podAnnotations: {}
   # End users must provide properties via --set-file into this map.
   # Keys may omit the .properties suffix; the chart appends it when rendering and importing.
   properties: ""
@@ -52,6 +56,10 @@ workers:
   maxMemoryPercentage: 70.0
   serviceAccount:
     annotations: {}
+  # Labels to add to the Conductor worker pods.
+  podLabels: {}
+  # Annotations to add to the Conductor worker pods.
+  podAnnotations: {}
   # End users must provide properties via --set-file into this map.
   # Keys may omit the .properties suffix; the chart appends it when rendering and importing.
   properties: ""
