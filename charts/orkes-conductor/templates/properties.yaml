@@ -1,0 +1,74 @@
+{{- /*
+  Runtime-only configuration. Exactly ONE properties file per scope, always named config.properties.
+  Inputs per scope (conductor/workers):
+    - properties: either a non-empty scalar string (file content), or a map with exactly one entry { <any-key>: "<content>" }
+  The chart writes that content to config.properties and imports it via Spring.
+*/ -}}
+
+{{- /* Validate conductor.properties */ -}}
+{{- $cp := .Values.conductor.properties -}}
+{{- if eq (kindOf $cp) "string" -}}
+  {{- if eq (trim $cp) "" -}}
+    {{- fail "conductor.properties must be a non-empty string or a map with exactly one entry (use --set-file)." -}}
+  {{- end -}}
+{{- else if eq (kindOf $cp) "map" -}}
+  {{- if ne (len $cp) 1 -}}
+    {{- fail "conductor.properties map must have exactly one entry (use --set-file)." -}}
+  {{- end -}}
+{{- else -}}
+  {{- fail "conductor.properties must be a non-empty string or a map with exactly one entry (use --set-file)." -}}
+{{- end -}}
+
+{{- /* Validate workers.properties */ -}}
+{{- $wp := .Values.workers.properties -}}
+{{- if eq (kindOf $wp) "string" -}}
+  {{- if eq (trim $wp) "" -}}
+    {{- fail "workers.properties must be a non-empty string or a map with exactly one entry (use --set-file)." -}}
+  {{- end -}}
+{{- else if eq (kindOf $wp) "map" -}}
+  {{- if ne (len $wp) 1 -}}
+    {{- fail "workers.properties map must have exactly one entry (use --set-file)." -}}
+  {{- end -}}
+{{- else -}}
+  {{- fail "workers.properties must be a non-empty string or a map with exactly one entry (use --set-file)." -}}
+{{- end -}}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-properties
+  labels:
+    app.kubernetes.io/name: orkes-conductor
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: app
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: Helm
+data:
+  config.properties: |
+    {{- if eq (kindOf .Values.conductor.properties) "string" }}
+    {{ .Values.conductor.properties | nindent 4 }}
+    {{- else }}
+    {{- range $k, $v := .Values.conductor.properties }}
+    {{ $v | nindent 4 }}
+    {{- end }}
+    {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-workers-properties
+  labels:
+    app.kubernetes.io/name: orkes-conductor
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: workers
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: Helm
+data:
+  config.properties: |
+    {{- if eq (kindOf .Values.workers.properties) "string" }}
+    {{ .Values.workers.properties | nindent 4 }}
+    {{- else }}
+    {{- range $k, $v := .Values.workers.properties }}
+    {{ $v | nindent 4 }}
+    {{- end }}
+    {{- end }}

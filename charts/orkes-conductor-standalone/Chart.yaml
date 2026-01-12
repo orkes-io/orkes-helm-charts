@@ -1,8 +1,0 @@
-apiVersion: v2
-name: orkes-conductor-standalone
-description: Orkes Conductor Standalone (recommended only for testing and development)
-
-type: application
-
-version: 2.7.50
-appVersion: "5.2.43"

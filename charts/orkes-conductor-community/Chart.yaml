@@ -1,8 +1,0 @@
-apiVersion: v2
-name: orkes-conductor-community
-description: Orkes Conductor Community
-
-type: application
-
-version: 2.2.98
-appVersion: "1.1.12"

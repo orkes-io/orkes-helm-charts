@@ -1,173 +1,70 @@
-service:
-  port: 5000
-  appPort: 8080
-  grpcPort: 8090
-
+# Container image configuration. You probably will not need to change this.
 image:
-  repository: orkesio/orkes-conductor-server
   pullPolicy: IfNotPresent
-  livenessPort: 5000
+  # Name of a pre-created image pull secret (docker-registry) to use for pulling images.
+  # Set to an empty string if no registry auth is required.
+  repositorySecretName: orkes-registry
 
-workerImage:
-  repository: orkesio/orkes-conductor-workers
-  pullPolicy: IfNotPresent
-
-app:
-  replicaCount: 3
-  env: aws
-  s3Region: "us-east-1"
-  springProfilesActive: "logrotate,postgres"
-  sweepBatchSize: "20"
-  schedulerPollingInterval: "50"
-  lockTimeToTry: "75"
-  documentStoreUploaderThreadCount: "15"
-  dbIndexerThreadCount: "5"
-  dbIndexerPollingInterval: "1"
-  swaggerUrl: "/"
-  sweeperThreadCount: "20"
-  schedulerPollBatchSize: "10"
-  dbIndexerPollBatchSize: "30"
-  sweepFrequencyMillis: "1"
-  # The max memory should be at least 300M less than pod resource limit
-  jvmSettings: "-Xms1500M -Xmx2500M"
-  systemTaskMaxPollCount: "20"
-  workflowExecutionLockEnabled: "true"
-  limits:
-    maxWorkflowSizeInMiB: "20"
-    maxTaskSizeInKiB: "200"
-    maxTaskInWorkflowExecution: "1000"
-    maxTaskInWorkflowDefinition: "1000"
-  apiRateLimiterEnabled: "true"
-  humanTasksEnabled: "false"
-  # documentStoreS3BucketName: Required if archiveStoreType = s3
-  documentStoreS3BucketName:
-  # documentStoreAzureBlobContainerName, documentStoreAzureBlobEndpoint: Required if archiveStoreType = azureblob
-  documentStoreAzureBlobContainerName:
-  documentStoreAzureBlobEndpoint:
-  documentStoreAzureUseSASToken: "false"
-  customLogoUrl:
-  # postgres, s3, azureblob, gcp
-  archiveStoreType: "postgres"
-  # API orchestration is disabled by default. This encompasses gRPC and REST service registries, resiliency patterns, and synchronous workflow execution.
-  apiOrchestrationEnabled: "false"
-  grpcServerEnabled: "false"
-  resources:
-    cpuLimit: "3"
-    memoryLimit: "3Gi"
-    cpuRequests: "2"
-    memoryRequests: "2Gi"
-  workflowDefinitionCache:
-    refreshIntervalInSeconds: 0  # 0 means disabled
-    maxSize: 1000
-  taskDefinitionCache:
-    refreshIntervalInSeconds: 60  # Task definitions are cached by default
-    maxSize: 1000
-  # Workflow introspection is disabled by default. This feature allows you to record and query detailed execution of
-  # workflows for debugging and performance analysis (essentially, it adds flame graphs). It is not recommended in
-  # production environments due to the high volume of data generated and increased load on the database.
-  workflowIntrospection:
-    enabled: false
-    recordExpirationInSeconds: 86400  # 1 day
-    batchInsertIntervalInMillis: 1000
-
-# Provide the name of the key vault if you are using key vault for secret management
-# Pre-requisite - the Azure SDK used by Conductor expects the host (i.e. pod/container) to be able to access this vault
-# by credentials from the environment. Typically, you would use something like Azure Workload Identity
-# Read more here: https://aka.ms/azsdk/java/identity/environmentcredential/troubleshoot
-azureKeyVaultName:
-
-secrets:
-  type: memory
-  ssmPath: ""
-  gsmPath: ""
-
-serviceAccount:
-  annotations: {}
-
-workers:
-  env:
-    ORKES_CLUSTER_NAME: "orkes-conductor"
-  replicaCount: 2
-  accessKeyId:  #  Key ID (random value)
-  accessKeySecret:  # Secret (secret value)
-  springProfilesActive: "logrotate"
-  blockIps: "127.0.0.1"
-  # The max memory should be at least 300M less than pod resource limit
-  jvmSettings: "-Xms750M -Xmx1500M"
-  resources:
-    cpuLimit: "2"
-    memoryLimit: "2Gi"
-    cpuRequests: "1"
-    memoryRequests: "1Gi"
-
-redis:
-  port: 6379
-  ssl: false
-  host: ""
-  password: ""
-  dbIndex: 0
-  clusterMode: false
-  zoneSuffix: us-east-1c
-
-postgres:
-  username: ""
-  password: ""
-  url: ""
+# The name of the Conductor cluster. This value is injected into both the Conductor server and worker pods. If absent,
+# the release name is used.
+clusterName:
 
 conductor:
+  # Infrastructure-level settings for the Conductor server pods.
+  replicaCount: 3
+  ports:
+    ui: 5000
+    api: 8080
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "1500Mi"
+    limits:
+      cpu: "2000m"
+      memory: "2500Mi"
+  initialMemoryPercentage: 40.0
+  maxMemoryPercentage: 70.0
+  serviceAccount:
+    annotations: {}
+  # Labels to add to the Conductor server pods.
+  podLabels: {}
+  # Annotations to add to the Conductor server pods.
+  podAnnotations: {}
+  # End users must provide properties via --set-file into this map.
+  # Keys may omit the .properties suffix; the chart appends it when rendering and importing.
+  properties: ""
+  # Additional environment variables to set in the Conductor server pods. The majority of Conductor-related
+  # configuration should be done via the properties file instead, but this map may be used for settings that come from
+  # an external system dynamically (such as Redis or PostgreSQL connection URLs, credentials, etc).
+  # NOTE: These values will override any equivalent settings in the properties file.
   env: {}
-  persistence:
-    type: postgres
-  workflow:
-    execution:
-      maxParallelSystemTasks: 1024
 
-imageCredentials:
-  registry: https://index.docker.io/v1/
-  username: orkesdocker
-  email: dockeracess@orkes.io
-  password: ""
-
-# Set this to false if you will be setting environment variables in other ways
-useOrkesDeploymentSecrets: true
-
-enableCustomTrustStore: false
-# If you are using a custom trust store, provide the following variables
-# jksFileName:
-# jksFilePassword:
-
-security:
-  allowedOrigins: "*"
-  enabled: false
-  overwriteDefault: true
-  createUserOnAuthentication: false
-  jwtExpiry: 3600
-# Please note that the admin user has to login first and create this group
-  defaultUserGroupsOnCreate: all_users
-  defaultUserEmail: ""
-  defaultUserName: ""
-  # Secret used to sign JWTs. How to generate it? openssl rand -base64 172 | tr -d '\n'
-  jwt:
-    secret: ""
-# Create an account in Auth0, Create a SPA - get the following info.
-# clientSecret is only needed if useIdToken: false
-#  auth0:
-#    useIdToken: true
-#    clientSecret:
-#    clientId:
-#    domain:
-#  Get this config from your OIDC Provider
-#  oidc:
-#    clientId:
-#    audience:
-#    metadataUrl:
-#    emailClaim:
-#  # Note: native Okta integration is not officially deprecated, but we recommend using OIDC instead. The OIDC integration
-#  # is much more flexible, more commonly used, and is going to be more actively maintained in the future.
-#  okta:
-#    clientId:
-#    audience:
-#    issuer:
-#    useInteractionCodeFlow:
-#    idpConf:
-extraObjects: []
+# These properties configure the deployment of Orkes' built-in workers, not any
+# custom workers you may have.
+workers:
+  # Infrastructure-level settings for the Orkes Workers pods.
+  replicaCount: 2
+  # Workers do not expose any ports for liveness or readiness probes (today).
+  resources:
+    requests:
+      cpu: "750m"
+      memory: "750Mi"
+    limits:
+      cpu: "1500m"
+      memory: "1500Mi"
+  initialMemoryPercentage: 40.0
+  maxMemoryPercentage: 70.0
+  serviceAccount:
+    annotations: {}
+  # Labels to add to the Conductor worker pods.
+  podLabels: {}
+  # Annotations to add to the Conductor worker pods.
+  podAnnotations: {}
+  # End users must provide properties via --set-file into this map.
+  # Keys may omit the .properties suffix; the chart appends it when rendering and importing.
+  properties: ""
+  # Additional environment variables to set in the Conductor worker pods. The majority of Conductor-related
+  # configuration should be done via the properties file instead, but this map may be used for settings that come from
+  # an external system dynamically.
+  # NOTE: These values will override any equivalent settings in the properties file.
+  env: {}
