@@ -30,6 +30,8 @@ conductor:
   podLabels: {}
   # Annotations to add to the Conductor server pods.
   podAnnotations: {}
+  # Node selector for Conductor server pods.
+  nodeSelector: {}
   # End users must provide properties via --set-file into this map.
   # Keys may omit the .properties suffix; the chart appends it when rendering and importing.
   properties: ""
@@ -60,6 +62,8 @@ workers:
   podLabels: {}
   # Annotations to add to the Conductor worker pods.
   podAnnotations: {}
+  # Node selector for Conductor worker pods.
+  nodeSelector: {}
   # End users must provide properties via --set-file into this map.
   # Keys may omit the .properties suffix; the chart appends it when rendering and importing.
   properties: ""
