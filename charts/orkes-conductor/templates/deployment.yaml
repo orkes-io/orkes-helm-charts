@@ -101,6 +101,10 @@ spec:
       restartPolicy: Always
       securityContext: { }
       serviceAccountName: conductor-app
+      {{- with .Values.conductor.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       terminationGracePeriodSeconds: 30
       volumes:
         - name: app-config
@@ -179,6 +183,10 @@ spec:
       restartPolicy: Always
       securityContext: { }
       serviceAccountName: conductor-workers-app
+      {{- with .Values.workers.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       terminationGracePeriodSeconds: 30
       volumes:
         - name: workers-config
