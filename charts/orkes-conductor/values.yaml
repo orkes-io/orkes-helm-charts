@@ -9,6 +9,64 @@ image:
 # the release name is used.
 clusterName:
 
+# Ingress configuration.
+#
+# NOTE: This chart will not create any Ingress resources unless you explicitly enable one.
+# - When `ingress.enabled=true`, the chart creates one Ingress named: <release>-ingress
+# - When `extraIngresses.<name>.enabled=true`, the chart creates additional Ingresses named: <release>-<name>
+ingress:
+  enabled: false
+  # Kubernetes IngressClass name (e.g. "nginx", "alb"). Leave empty to use the cluster default.
+  className: ""
+  # Optional annotations for your Ingress controller.
+  annotations: {}
+  # Optional TLS configuration.
+  # Example:
+  # tls:
+  #   - secretName: conductor-tls
+  #     hosts:
+  #       - conductor.example.com
+  tls: []
+  # Hosts and paths to route to the Conductor service.
+  # The backend service is always <release>-server.
+  hosts:
+    - host: conductor.local
+      paths:
+        # UI
+        - path: /
+          pathType: Prefix
+          port: 5000
+        # API (optional)
+        - path: /api
+          pathType: Prefix
+          port: 8080
+
+# Additional named Ingress resources.
+#
+# Example:
+# extraIngresses:
+#   internal:
+#     enabled: true
+#     className: "nginx"
+#     annotations: {}
+#     tls: []
+#     hosts:
+#       - host: conductor-internal.local
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             port: 5000
+extraIngresses: {}
+
+# PriorityClass configuration.
+# When enabled, the chart will create two PriorityClass resources and use them for the server/worker pods.
+priorityClasses:
+  enabled: false
+  # PriorityClass value for Conductor server pods.
+  conductorValue: 100000
+  # PriorityClass value for worker pods.
+  workerValue: 90000
+
 conductor:
   # Infrastructure-level settings for the Conductor server pods.
   replicaCount: 3
