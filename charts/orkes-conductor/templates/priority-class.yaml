@@ -1,0 +1,17 @@
+{{- if .Values.priorityClasses.enabled -}}
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: {{ .Release.Name }}-conductor-priority
+value: {{ .Values.priorityClasses.conductorValue | int }}
+globalDefault: false
+description: "Priority class for Orkes Conductor server pods"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: {{ .Release.Name }}-worker-priority
+value: {{ .Values.priorityClasses.workerValue | int }}
+globalDefault: false
+description: "Priority class for Orkes Conductor worker pods"
+{{- end -}}
