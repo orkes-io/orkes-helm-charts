@@ -46,10 +46,10 @@ metadata:
 data:
   config.properties: |
     {{- if eq (kindOf .Values.conductor.properties) "string" }}
-    {{ .Values.conductor.properties | nindent 4 }}
+    {{- .Values.conductor.properties | nindent 4 }}
     {{- else }}
     {{- range $k, $v := .Values.conductor.properties }}
-    {{ $v | nindent 4 }}
+    {{- $v | nindent 4 }}
     {{- end }}
     {{- end }}
 ---
@@ -66,9 +66,9 @@ metadata:
 data:
   config.properties: |
     {{- if eq (kindOf .Values.workers.properties) "string" }}
-    {{ .Values.workers.properties | nindent 4 }}
+    {{- .Values.workers.properties | nindent 4 }}
     {{- else }}
     {{- range $k, $v := .Values.workers.properties }}
-    {{ $v | nindent 4 }}
+    {{- $v | nindent 4 }}
     {{- end }}
     {{- end }}
