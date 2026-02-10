@@ -4,6 +4,9 @@ kind: PriorityClass
 metadata:
   name: {{ .Release.Name }}-conductor-priority
 value: {{ .Values.priorityClasses.conductorValue | int }}
+{{- with .Values.priorityClasses.conductorPreemptionPolicy }}
+preemptionPolicy: {{ . | quote }}
+{{- end }}
 globalDefault: false
 description: "Priority class for Orkes Conductor server pods"
 ---
@@ -12,6 +15,9 @@ kind: PriorityClass
 metadata:
   name: {{ .Release.Name }}-worker-priority
 value: {{ .Values.priorityClasses.workerValue | int }}
+{{- with .Values.priorityClasses.workerPreemptionPolicy }}
+preemptionPolicy: {{ . | quote }}
+{{- end }}
 globalDefault: false
 description: "Priority class for Orkes Conductor worker pods"
 {{- end -}}
