@@ -66,6 +66,10 @@ priorityClasses:
   conductorValue: 100000
   # PriorityClass value for worker pods.
   workerValue: 90000
+  # Optional preemption policies. If unset, Kubernetes uses its default behavior.
+  # Common values: "PreemptLowerPriority" (default) or "Never".
+  conductorPreemptionPolicy: "PreemptLowerPriority"
+  workerPreemptionPolicy: "PreemptLowerPriority"
 
 conductor:
   # Infrastructure-level settings for the Conductor server pods.
@@ -90,6 +94,10 @@ conductor:
   podAnnotations: {}
   # Node selector for Conductor server pods.
   nodeSelector: {}
+  # Optional affinity rules for Conductor server pods.
+  affinity: {}
+  # Optional tolerations for Conductor server pods.
+  tolerations: []
   # End users must provide properties via --set-file into this map.
   # Keys may omit the .properties suffix; the chart appends it when rendering and importing.
   properties: ""
@@ -122,6 +130,10 @@ workers:
   podAnnotations: {}
   # Node selector for Conductor worker pods.
   nodeSelector: {}
+  # Optional affinity rules for Conductor worker pods.
+  affinity: {}
+  # Optional tolerations for Conductor worker pods.
+  tolerations: []
   # End users must provide properties via --set-file into this map.
   # Keys may omit the .properties suffix; the chart appends it when rendering and importing.
   properties: ""
