@@ -107,6 +107,25 @@ conductor:
   # NOTE: These values will override any equivalent settings in the properties file.
   env: {}
 
+  # Metrics scraping configuration for kube-prometheus-stack.
+  # When enabled, the chart will create a PodMonitor (recommended) so Prometheus scrapes each Conductor pod directly.
+  metrics:
+    enabled: false
+    # One of: PodMonitor, ServiceMonitor
+    kind: PodMonitor
+    # Scrape settings
+    path: /actuator/prometheus
+    interval: 5s
+    scrapeTimeout: 5s
+    scheme: http
+    # Name of the container port to scrape (must match a named container port in the Deployment).
+    portName: api
+    # Additional labels to attach to the monitor resource.
+    # If your Prometheus is configured with a label selector, you might need:
+    # labels:
+    #   release: prometheus
+    labels: {}
+
 # These properties configure the deployment of Orkes' built-in workers, not any
 # custom workers you may have.
 workers:

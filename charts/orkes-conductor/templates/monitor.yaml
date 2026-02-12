@@ -1,0 +1,62 @@
+{{- /*
+Create a PodMonitor or ServiceMonitor to enable Prometheus to scrape Conductor metrics.
+This requires the Prometheus Operator CRDs (installed by kube-prometheus-stack).
+*/ -}}
+
+{{- if and .Values.conductor.metrics .Values.conductor.metrics.enabled -}}
+{{- $kind := default "PodMonitor" .Values.conductor.metrics.kind -}}
+
+{{- if eq $kind "PodMonitor" }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .Release.Name }}-conductor
+  labels:
+    app.kubernetes.io/name: orkes-conductor
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: app
+    {{- with .Values.conductor.metrics.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orkes-conductor
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: app
+  podMetricsEndpoints:
+    - port: {{ default "api" .Values.conductor.metrics.portName | quote }}
+      path: {{ default "/actuator/prometheus" .Values.conductor.metrics.path | quote }}
+      interval: {{ default "5s" .Values.conductor.metrics.interval | quote }}
+      scrapeTimeout: {{ default "5s" .Values.conductor.metrics.scrapeTimeout | quote }}
+      scheme: {{ default "http" .Values.conductor.metrics.scheme | quote }}
+
+{{- else if eq $kind "ServiceMonitor" }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}-conductor
+  labels:
+    app.kubernetes.io/name: orkes-conductor
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: app
+    {{- with .Values.conductor.metrics.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orkes-conductor
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: app
+  endpoints:
+    - port: {{ default "api" .Values.conductor.metrics.portName | quote }}
+      path: {{ default "/actuator/prometheus" .Values.conductor.metrics.path | quote }}
+      interval: {{ default "5s" .Values.conductor.metrics.interval | quote }}
+      scrapeTimeout: {{ default "5s" .Values.conductor.metrics.scrapeTimeout | quote }}
+      scheme: {{ default "http" .Values.conductor.metrics.scheme | quote }}
+
+{{- else }}
+{{- fail (printf "Unsupported conductor.metrics.kind=%s (expected PodMonitor or ServiceMonitor)" $kind) -}}
+{{- end }}
+{{- end }}
