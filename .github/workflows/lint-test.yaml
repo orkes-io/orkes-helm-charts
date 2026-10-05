@@ -87,6 +87,6 @@ jobs:
           ct install \
             --config "${CONFIG_FILE}" \
             --namespace chart-testing \
-            --helm-extra-set-args="--set-file=conductor.properties=examples/Evaluation/conductor.properties.test --set-file=workers.properties=examples/Evaluation/workers.properties.test --set conductor.replicaCount=1 --set workers.replicaCount=1" \
+            --helm-extra-set-args="--set-file=conductor.properties=examples/Evaluation/conductor.properties.test --set-file=workers.properties=examples/Evaluation/workers.properties.test --set conductor.replicaCount=1 --set workers.replicaCount=1 --set ingress.enabled=true" \
             --charts charts/orkes-conductor
         if: steps.list-changed.outputs.changed == 'true'
