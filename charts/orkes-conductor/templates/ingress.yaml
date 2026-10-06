@@ -46,6 +46,15 @@ spec:
       http:
         paths:
           {{- range .paths }}
+          {{- /* The UI and API are separate Services; pick the one that serves this path's port. */}}
+          {{- $serviceName := "" }}
+          {{- if eq (int .port) (int $.Values.conductor.ports.ui) }}
+            {{- $serviceName = default "conductor" $.Values.conductor.uiServiceName }}
+          {{- else if eq (int .port) (int $.Values.conductor.ports.api) }}
+            {{- $serviceName = default "conductor-app" $.Values.conductor.appServiceName }}
+          {{- else }}
+            {{- fail (printf "ingress path %q: port %v matches neither conductor.ports.ui (%v) nor conductor.ports.api (%v)" .path .port $.Values.conductor.ports.ui $.Values.conductor.ports.api) }}
+          {{- end }}
           - path: {{ .path }}
             {{- if .pathType }}
             pathType: {{ .pathType }}
@@ -54,7 +63,7 @@ spec:
             {{- end }}
             backend:
               service:
-                name: {{ $.Release.Name }}-server
+                name: {{ $serviceName }}
                 port:
                   number: {{ .port }}
           {{- end }}

@@ -45,8 +45,11 @@ helm upgrade --install orkes-conductor ../../charts/orkes-conductor --namespace 
 ```
 
 ## Forward Ports to Access Orkes Conductor UI and API
+The chart exposes the API and the UI as two services, `conductor-app` (8080) and `conductor` (5000),
+so each needs its own port-forward:
 ```shell
-kubectl port-forward -n orkes-conductor svc/orkes-conductor-server 8080:8080 5000:5000
+kubectl port-forward -n orkes-conductor svc/conductor-app 8080:8080 &
+kubectl port-forward -n orkes-conductor svc/conductor 5000:5000 &
 ```
 
 ## Get Pods

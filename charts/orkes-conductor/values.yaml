@@ -28,7 +28,9 @@ ingress:
   #       - conductor.example.com
   tls: []
   # Hosts and paths to route to the Conductor service.
-  # The backend service is always <release>-server.
+  # Each path's port selects the backend service: conductor.ports.ui (5000) routes to the
+  # UI service (conductor.uiServiceName, default "conductor"), conductor.ports.api (8080) to
+  # the API service (conductor.appServiceName, default "conductor-app").
   hosts:
     - host: conductor.local
       paths:
